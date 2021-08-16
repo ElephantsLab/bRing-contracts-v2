@@ -1,0 +1,29 @@
+{
+  "name": "bRing-contracts-v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "compile": "truffle compile --all",
+    "build": "sol-merger -c \"./contracts/**/*.sol\" ./build/dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElephantsLab/bRing-contracts-v2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ElephantsLab/bRing-contracts-v2/issues"
+  },
+  "homepage": "https://github.com/ElephantsLab/bRing-contracts-v2#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.2.0"
+  },
+  "devDependencies": {
+    "sol-merger": "^3.1.0"
+  }
+}
