@@ -11,9 +11,10 @@ struct Pool {
   address[] farmingSequence;
   uint256[] rewardRates;
 
-  uint128[] rewardsPerShare;
-  uint64 lastRewardBlock;
-  uint64[] allocPoints;
+  uint256[] rewardsAccPerShare;
+  uint256 lastOperationBlock;
+  uint256 totalStaked;
+  //uint64[] allocPoints;
 }
 
 struct User {
@@ -22,6 +23,7 @@ struct User {
 
 struct Stake {
   uint256 amount;
+  uint256[] stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
 }
