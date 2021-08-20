@@ -11,7 +11,7 @@ contract BRingFarming is BRingFarmingOwnable {
   mapping(address => Pool) pools;
 
   mapping(address => User) public users;
-  mapping(address => mapping(address => Stake[])) public stakes;
+  mapping(address => Stake[]) public stakes;
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
     User storage user = users[msg.sender];
@@ -24,6 +24,8 @@ contract BRingFarming is BRingFarmingOwnable {
 
     // Create stake
     Stake memory _stake;
+    _stake.idx = stakes[msg.sender].length;
+    _stake.stakedToken = stakedTokenAddress;
     _stake.amount = amount;
     _stake.stakeTime = block.timestamp;
 
@@ -40,7 +42,7 @@ contract BRingFarming is BRingFarmingOwnable {
     pool.totalStaked+= amount;
     pool.lastOperationBlock = block.number;
 
-    stakes[msg.sender][stakedTokenAddress].push(_stake);
+    stakes[msg.sender].push(_stake);
   }
 
   function unstake(address userAddress, uint256 stakeIdx) external whenNotPaused {

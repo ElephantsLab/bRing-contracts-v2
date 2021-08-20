@@ -22,6 +22,8 @@ struct User {
 }
 
 struct Stake {
+  uint256 idx;
+  address stakedToken;
   uint256 amount;
   uint256[] stakeAcc;
   uint256 stakeTime;
