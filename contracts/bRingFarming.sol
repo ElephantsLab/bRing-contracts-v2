@@ -17,10 +17,14 @@ contract BRingFarming is BRingFarmingOwnable {
     User storage user = users[msg.sender];
     Pool storage pool = pools[stakedTokenAddress];
 
+    //TODO: validate pool object
+
     // Update user data
     if (user.referrer == address(0x0) && referrer != address(0x0)) {
       user.referrer = referrer;
     }
+
+    //TODO: transfer staked tokens from the user address
 
     // Create stake
     Stake memory _stake;
@@ -45,7 +49,24 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   function unstake(address userAddress, uint256 stakeIdx) external whenNotPaused {
-    //TODO: implement
+    require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
+
+    Stake storage _stake = stakes[userAddress][stakeIdx];
+    require(_stake.unstakeTime == 0, "Stake was unstaked already");
+
+    // Update stake
+    _stake.unstakeTime = block.timestamp;
+
+    Pool storage pool = pools[_stake.stakedToken];
+    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
+      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+
+      uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
+      //TODO: transfer reward and pay referral reward
+    }
+
+    pool.totalStaked-= _stake.amount;
+    pool.lastOperationBlock = block.number;
   }
 
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) private view returns (uint256) {
