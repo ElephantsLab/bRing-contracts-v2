@@ -19,6 +19,7 @@ struct Pool {
 
 struct User {
   address referrer;
+  //TODO: address[] referrals;
 }
 
 struct Stake {
@@ -32,6 +33,8 @@ struct Stake {
 }
 
 contract BRingFarmingOwnable is Ownable, Pausable {
+
+  //TODO: implement contract and staking configuration methods (onlyOwner)
 
   function retrieveTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
     require(_amount > 0, "Invalid amount");

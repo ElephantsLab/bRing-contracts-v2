@@ -69,6 +69,10 @@ contract BRingFarming is BRingFarmingOwnable {
     pool.lastOperationBlock = block.number;
   }
 
+  function claimReward(address userAddress, uint256 stakeIdx) external whenNotPaused {
+    //TODO: implement
+  }
+
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) private view returns (uint256) {
     return pool.rewardsAccPerShare[farmingSequenceIdx]
         + (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
