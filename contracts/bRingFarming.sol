@@ -32,8 +32,7 @@ contract BRingFarming is BRingFarmingOwnable {
     // Update pool data
     if (pool.totalStaked > 0) {
       for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-        pool.rewardsAccPerShare[i] = pool.rewardsAccPerShare[i]
-          + (block.number - pool.lastOperationBlock) * pool.rewardRates[i] / pool.totalStaked;
+        pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
         _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
       }
@@ -47,6 +46,24 @@ contract BRingFarming is BRingFarmingOwnable {
 
   function unstake(address userAddress, uint256 stakeIdx) external whenNotPaused {
     //TODO: implement
+  }
+
+  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) private view returns (uint256) {
+    return pool.rewardsAccPerShare[farmingSequenceIdx]
+        + (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
+  }
+
+  function getStakeRewards(address userAddress, uint256 stakeIdx) external view returns (uint256[10] memory rewards) {
+    Stake memory _stake = stakes[userAddress][stakeIdx];
+    Pool memory pool = pools[_stake.stakedToken];
+
+    if (pool.totalStaked == 0 || _stake.unstakeTime > 0) {
+      return rewards;
+    }
+
+    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
+      rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i]) * _stake.amount;
+    }
   }
 
 }
