@@ -17,7 +17,7 @@ struct Pool {
 
 struct User {
   address referrer;
-  //TODO: address[] referrals;
+  address[] referrals;
 }
 
 struct Stake {
@@ -38,11 +38,18 @@ contract BRingFarmingOwnable is Ownable, Pausable {
   uint256 public stakingDuration;
   uint256 public contractDeploymentTime;
 
-  uint256 stakeMultiplier;
+  uint256 public stakeMultiplier;
+
+  uint256[] public referralPercents = [3, 2, 1]; // 3%, 2%, 1%
+  uint256 public totalReferralPercent;
 
   constructor() {
     stakingDuration = 90 * 24 * 3600; // 90 days
     stakeMultiplier = 3;
+
+    for (uint8 i = 0; i < referralPercents.length; i++) {
+      totalReferralPercent+= referralPercents[i];
+    }
 
     contractDeploymentTime = block.timestamp;
   }
@@ -57,6 +64,16 @@ contract BRingFarmingOwnable is Ownable, Pausable {
     require(_multiplier > 0, "Invalid multiplier value");
 
     stakeMultiplier = _multiplier;
+  }
+
+  function changeReferralPercents(uint256[] memory _referralPercents) external onlyOwner {
+    require(_referralPercents.length > 0, "Invalid referral percents array data");
+
+    referralPercents = _referralPercents;
+    totalReferralPercent = 0;
+    for (uint8 i = 0; i < referralPercents.length; i++) {
+      totalReferralPercent+= referralPercents[i];
+    }
   }
 
   /**

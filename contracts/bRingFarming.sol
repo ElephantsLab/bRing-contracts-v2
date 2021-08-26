@@ -22,6 +22,7 @@ contract BRingFarming is BRingFarmingOwnable {
     // Update user data
     if (user.referrer == address(0x0) && referrer != address(0x0)) {
       user.referrer = referrer;
+      users[referrer].referrals.push(msg.sender);
     }
 
     //TODO: transfer staked tokens from the user address
@@ -63,8 +64,23 @@ contract BRingFarming is BRingFarmingOwnable {
 
       uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
       reward*= getStakeMultiplier(_stake);
-      //TODO: transfer reward and pay referral reward
+
+      // Transfer reward and pay referral reward
+      if (users[msg.sender].referrer == address(0x0)) {
+        IERC20(pool.farmingSequence[i]).transfer(msg.sender, reward * 90 / 100);
+      } else {
+        IERC20(pool.farmingSequence[i]).transfer(msg.sender, reward * 94 / 100);
+        address ref = users[msg.sender].referrer;
+        for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
+          IERC20(pool.farmingSequence[i]).transfer(ref, reward * referralPercents[j] / 100);
+
+          ref = users[ref].referrer;
+        }
+      }
     }
+
+    // Return stake
+    IERC20(_stake.stakedToken).transfer(msg.sender, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
     pool.lastOperationBlock = block.number;
