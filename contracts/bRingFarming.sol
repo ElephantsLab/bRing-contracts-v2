@@ -62,6 +62,7 @@ contract BRingFarming is BRingFarmingOwnable {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
       uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
+      reward*= getStakeMultiplier(_stake);
       //TODO: transfer reward and pay referral reward
     }
 
@@ -88,7 +89,17 @@ contract BRingFarming is BRingFarmingOwnable {
 
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i]) * _stake.amount;
+      rewards[i]*= getStakeMultiplier(_stake);
     }
+  }
+
+  function getStakeMultiplier(Stake memory _stake) private view returns (uint256) {
+    uint256 currentStakeTime = block.timestamp;
+    if (contractDeploymentTime + stakingDuration < currentStakeTime) {
+      currentStakeTime = contractDeploymentTime + stakingDuration;
+    }
+
+    return 1 + (stakeMultiplier - 1) * (currentStakeTime - _stake.stakeTime) / stakingDuration;
   }
 
 }

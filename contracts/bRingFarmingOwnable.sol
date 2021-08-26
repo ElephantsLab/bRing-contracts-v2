@@ -38,14 +38,25 @@ contract BRingFarmingOwnable is Ownable, Pausable {
   uint256 public stakingDuration;
   uint256 public contractDeploymentTime;
 
+  uint256 stakeMultiplier;
+
   constructor() {
     stakingDuration = 90 * 24 * 3600; // 90 days
+    stakeMultiplier = 3;
 
     contractDeploymentTime = block.timestamp;
   }
 
   function changeStakingDuration(uint256 _days) external onlyOwner {
+    require(_days > 0, "Invalid number of days");
+
     stakingDuration = _days * 24 * 3600;
+  }
+
+  function changeStakeMultiplier(uint256 _multiplier) external onlyOwner {
+    require(_multiplier > 0, "Invalid multiplier value");
+
+    stakeMultiplier = _multiplier;
   }
 
   /**
