@@ -59,28 +59,10 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.unstakeTime = block.timestamp;
 
     Pool storage pool = pools[_stake.stakedToken];
-    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
-
-      uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
-      reward*= getStakeMultiplier(_stake);
-
-      // Transfer reward and pay referral reward
-      if (users[msg.sender].referrer == address(0x0)) {
-        IERC20(pool.farmingSequence[i]).transfer(msg.sender, reward * 90 / 100);
-      } else {
-        IERC20(pool.farmingSequence[i]).transfer(msg.sender, reward * 94 / 100);
-        address ref = users[msg.sender].referrer;
-        for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
-          IERC20(pool.farmingSequence[i]).transfer(ref, reward * referralPercents[j] / 100);
-
-          ref = users[ref].referrer;
-        }
-      }
-    }
+    distributeReward(userAddress, _stake, pool);
 
     // Return stake
-    IERC20(_stake.stakedToken).transfer(msg.sender, _stake.amount);
+    IERC20(_stake.stakedToken).transfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
     pool.lastOperationBlock = block.number;
@@ -88,6 +70,28 @@ contract BRingFarming is BRingFarmingOwnable {
 
   function claimReward(address userAddress, uint256 stakeIdx) external whenNotPaused {
     //TODO: implement
+  }
+
+  function distributeReward(address userAddress, Stake memory _stake, Pool storage pool) private {
+    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
+      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+
+      uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
+      reward*= getStakeMultiplier(_stake);
+
+      // Transfer reward and pay referral reward
+      if (users[userAddress].referrer == address(0x0)) {
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 90 / 100);
+      } else {
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 94 / 100);
+        address ref = users[userAddress].referrer;
+        for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
+          IERC20(pool.farmingSequence[i]).transfer(ref, reward * referralPercents[j] / 100);
+
+          ref = users[ref].referrer;
+        }
+      }
+    }
   }
 
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) private view returns (uint256) {
