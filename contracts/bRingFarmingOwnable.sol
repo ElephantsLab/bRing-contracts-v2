@@ -32,7 +32,32 @@ struct Stake {
 
 contract BRingFarmingOwnable is Ownable, Pausable {
 
-  //TODO: implement contract and staking configuration methods (onlyOwner)
+  address[] public poolAddresses;
+  mapping(address => Pool) public pools;
+
+  /**
+   * Farming pools configuration method. New pools should be created with this method or old pools
+   * may be updated with this method.
+   *
+   * @param stakedTokenAddress Address of the staked token contract.
+   * @param farmingSequence List of farming tokens addresses.
+   * @param rewardRates List of rewards per block for every token from the farming sequence list.
+   */
+  function configPool(
+    address stakedTokenAddress,
+    address[] memory farmingSequence,
+    uint256[] memory rewardRates
+  ) external onlyOwner {
+    require(stakedTokenAddress != address(0x0), "Invalid token contract address");
+    require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
+
+    if (pools[stakedTokenAddress].farmingSequence.length == 0) {
+      poolAddresses.push(stakedTokenAddress);
+    }
+
+    pools[stakedTokenAddress].farmingSequence = farmingSequence;
+    pools[stakedTokenAddress].rewardRates = rewardRates;
+  }
 
   function retrieveTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
     require(_amount > 0, "Invalid amount");

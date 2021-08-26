@@ -7,9 +7,6 @@ import "./BRingFarmingOwnable.sol";
 
 contract BRingFarming is BRingFarmingOwnable {
 
-  address[] public poolAddresses;
-  mapping(address => Pool) public pools;
-
   mapping(address => User) public users;
   mapping(address => Stake[]) public stakes;
 
