@@ -49,7 +49,7 @@ contract BRingFarming is BRingFarmingOwnable {
     stakes[msg.sender].push(_stake);
   }
 
-  function unstake(address userAddress, uint256 stakeIdx) external whenNotPaused {
+  function _unstake(address userAddress, uint256 stakeIdx) private whenNotPaused {
     require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
 
     Stake storage _stake = stakes[userAddress][stakeIdx];
@@ -68,8 +68,16 @@ contract BRingFarming is BRingFarmingOwnable {
     pool.lastOperationBlock = block.number;
   }
 
-  function claimReward(address userAddress, uint256 stakeIdx) external whenNotPaused {
+  function claimReward(uint256 stakeIdx) external whenNotPaused {
     //TODO: implement
+  }
+
+  function unstake(uint256 stakeIdx) external whenNotPaused {
+    _unstake(msg.sender, stakeIdx);
+  }
+
+  function unstakeForAddress(address userAddress, uint256 stakeIdx) external onlyOwner {
+    _unstake(userAddress, stakeIdx);
   }
 
   function distributeReward(address userAddress, Stake memory _stake, Pool storage pool) private {

@@ -100,6 +100,10 @@ contract BRingFarmingOwnable is Ownable, Pausable {
     pools[stakedTokenAddress].rewardRates = rewardRates;
   }
 
+  function emergencyUnstake() external onlyOwner {
+    //TODO: implement
+  }
+
   function retrieveTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
     require(_amount > 0, "Invalid amount");
 
