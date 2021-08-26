@@ -8,7 +8,7 @@ import "./BRingFarmingOwnable.sol";
 contract BRingFarming is BRingFarmingOwnable {
 
   address[] public poolAddresses;
-  mapping(address => Pool) pools;
+  mapping(address => Pool) public pools;
 
   mapping(address => User) public users;
   mapping(address => Stake[]) public stakes;
@@ -17,7 +17,8 @@ contract BRingFarming is BRingFarmingOwnable {
     User storage user = users[msg.sender];
     Pool storage pool = pools[stakedTokenAddress];
 
-    //TODO: validate pool object
+    // Validate pool object
+    require(pool.farmingSequence.length > 0, "Pool doesn't exist");
 
     // Update user data
     if (user.referrer == address(0x0) && referrer != address(0x0)) {
