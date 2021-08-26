@@ -35,6 +35,19 @@ contract BRingFarmingOwnable is Ownable, Pausable {
   address[] public poolAddresses;
   mapping(address => Pool) public pools;
 
+  uint256 public stakingDuration;
+  uint256 public contractDeploymentTime;
+
+  constructor() {
+    stakingDuration = 90 * 24 * 3600; // 90 days
+
+    contractDeploymentTime = block.timestamp;
+  }
+
+  function changeStakingDuration(uint256 _days) external onlyOwner {
+    stakingDuration = _days * 24 * 3600;
+  }
+
   /**
    * Farming pools configuration method. New pools should be created with this method or old pools
    * may be updated with this method.

@@ -11,6 +11,8 @@ contract BRingFarming is BRingFarmingOwnable {
   mapping(address => Stake[]) public stakes;
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
+    require(block.timestamp < contractDeploymentTime + stakingDuration, "Staking is finished");
+
     User storage user = users[msg.sender];
     Pool storage pool = pools[stakedTokenAddress];
 
