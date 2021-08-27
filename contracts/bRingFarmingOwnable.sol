@@ -92,11 +92,20 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    */
   function configPool(
     address stakedTokenAddress,
+    uint256 minStakeAmount,
+    uint256 maxStakeAmount,
+    uint256 totalStakeLimit,
     address[] memory farmingSequence,
     uint256[] memory rewardRates
   ) external onlyOwner {
     require(stakedTokenAddress != address(0x0), "Invalid token contract address");
+    require(minStakeAmount > 0 && minStakeAmount < maxStakeAmount, "Invalid min or max stake amounts values");
+    require(maxStakeAmount < totalStakeLimit, "Invalid total stake limit value");
     require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
+
+    pools[stakedTokenAddress].minStakeAmount = minStakeAmount;
+    pools[stakedTokenAddress].maxStakeAmount = maxStakeAmount;
+    pools[stakedTokenAddress].totalStakeLimit = totalStakeLimit;
 
     if (pools[stakedTokenAddress].farmingSequence.length == 0) {
       poolAddresses.push(stakedTokenAddress);
