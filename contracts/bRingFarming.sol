@@ -11,6 +11,8 @@ contract BRingFarming is BRingFarmingOwnable {
   mapping(address => Stake[]) public stakes;
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
+    require(amount > 0, "Invalid stake amount value");
+    //TODO: add min stake, max stake and total stake limits logic
     require(block.timestamp < contractDeploymentTime + stakingDuration, "Staking is finished");
 
     User storage user = users[msg.sender];
@@ -25,7 +27,11 @@ contract BRingFarming is BRingFarmingOwnable {
       users[referrer].referrals.push(msg.sender);
     }
 
-    //TODO: transfer staked tokens from the user address
+    // Transfer staked tokens from the user address
+    require(
+      IERC20(stakedTokenAddress).transferFrom(msg.sender, address(this), amount),
+      "Tokens stake deposit error"
+    );
 
     // Create stake
     Stake memory _stake;
