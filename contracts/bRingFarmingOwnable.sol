@@ -7,6 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 struct Pool {
+  uint256 minStakeAmount;
+  uint256 maxStakeAmount;
+  uint256 totalStakeLimit;
   address[] farmingSequence;
   uint256[] rewardRates;
 

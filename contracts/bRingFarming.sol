@@ -12,11 +12,13 @@ contract BRingFarming is BRingFarmingOwnable {
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
     require(amount > 0, "Invalid stake amount value");
-    //TODO: add min stake, max stake and total stake limits logic
     require(block.timestamp < contractDeploymentTime + stakingDuration, "Staking is finished");
 
     User storage user = users[msg.sender];
     Pool storage pool = pools[stakedTokenAddress];
+
+    require(amount >= pool.minStakeAmount && amount <= pool.maxStakeAmount, "Invalid stake amount value");
+    require(pool.totalStaked + amount <= pool.totalStakeLimit, "This pool is fulfilled");
 
     // Validate pool object
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
