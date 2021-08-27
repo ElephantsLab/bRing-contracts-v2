@@ -33,10 +33,13 @@ struct Stake {
   //TODO: add stake and unstake block numbers
 }
 
-contract BRingFarmingOwnable is Ownable, Pausable {
+abstract contract BRingFarmingOwnable is Ownable, Pausable {
 
   address[] public poolAddresses;
   mapping(address => Pool) public pools;
+
+  mapping(address => User) public users;
+  mapping(address => Stake[]) public stakes;
 
   uint256 public stakingDuration;
   uint256 public contractDeploymentTime;
@@ -103,8 +106,60 @@ contract BRingFarmingOwnable is Ownable, Pausable {
     pools[stakedTokenAddress].rewardRates = rewardRates;
   }
 
-  function emergencyUnstake() external onlyOwner {
-    //TODO: implement
+  /**
+   * Owner can use this method to forcibly unstake some stake and point out reward amounts manually.
+   *
+   * @param userAddress Address of the stake owner.
+   * @param stakeIdx Id of the users' stake.
+   * @param rewards Manually pointed out rewards array.
+   * @param payReferralRewards Pay referral rewards flag.
+   */
+  function emergencyUnstake(
+    address userAddress,
+    uint256 stakeIdx,
+    uint256[] memory rewards,
+    bool payReferralRewards
+  ) external onlyOwner {
+    require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
+
+    Stake storage _stake = stakes[userAddress][stakeIdx];
+    require(_stake.unstakeTime == 0, "Stake was unstaked already");
+
+    Pool storage pool = pools[_stake.stakedToken];
+    require(pool.farmingSequence.length == rewards.length, "Incorrect rewards array length");
+
+    // Update stake
+    _stake.unstakeTime = block.timestamp;
+
+    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
+      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+
+      if (rewards[i] == 0) {
+        continue;
+      }
+
+      // Transfer reward and pay referral reward
+      if (users[userAddress].referrer == address(0x0)) {
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 90 / 100);
+      } else {
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 94 / 100);
+        if (!payReferralRewards) {
+          continue;
+        }
+        address ref = users[userAddress].referrer;
+        for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
+          IERC20(pool.farmingSequence[i]).transfer(ref, rewards[i] * referralPercents[j] / 100);
+
+          ref = users[ref].referrer;
+        }
+      }
+    }
+
+    // Return stake
+    IERC20(_stake.stakedToken).transfer(userAddress, _stake.amount);
+
+    pool.totalStaked-= _stake.amount;
+    pool.lastOperationBlock = block.number;
   }
 
   function retrieveTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
@@ -127,5 +182,7 @@ contract BRingFarmingOwnable is Ownable, Pausable {
   function unpause() external onlyOwner {
     _unpause();
   }
+
+  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) virtual internal view returns (uint256);
   
 }

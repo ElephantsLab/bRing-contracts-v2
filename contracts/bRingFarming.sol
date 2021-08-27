@@ -7,9 +7,6 @@ import "./BRingFarmingOwnable.sol";
 
 contract BRingFarming is BRingFarmingOwnable {
 
-  mapping(address => User) public users;
-  mapping(address => Stake[]) public stakes;
-
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
     require(amount > 0, "Invalid stake amount value");
     require(block.timestamp < contractDeploymentTime + stakingDuration, "Staking is finished");
@@ -121,7 +118,7 @@ contract BRingFarming is BRingFarmingOwnable {
     }
   }
 
-  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) private view returns (uint256) {
+  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) override internal view returns (uint256) {
     return pool.rewardsAccPerShare[farmingSequenceIdx]
         + (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
   }
