@@ -59,7 +59,7 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.unstakeTime = block.timestamp;
 
     Pool storage pool = pools[_stake.stakedToken];
-    distributeReward(userAddress, _stake, pool);
+    distributeReward(userAddress, _stake, pool, false);
 
     // Return stake
     IERC20(_stake.stakedToken).transfer(userAddress, _stake.amount);
@@ -69,7 +69,15 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   function claimReward(uint256 stakeIdx) external whenNotPaused {
-    //TODO: implement
+    require(stakeIdx < stakes[msg.sender].length, "Invalid stake index");
+
+    Stake storage _stake = stakes[msg.sender][stakeIdx];
+    require(_stake.unstakeTime == 0, "Stake was unstaked already");
+
+    Pool storage pool = pools[_stake.stakedToken];
+    distributeReward(msg.sender, _stake, pool, true);
+
+    pool.lastOperationBlock = block.number;
   }
 
   function unstake(uint256 stakeIdx) external whenNotPaused {
@@ -80,9 +88,12 @@ contract BRingFarming is BRingFarmingOwnable {
     _unstake(userAddress, stakeIdx);
   }
 
-  function distributeReward(address userAddress, Stake memory _stake, Pool storage pool) private {
+  function distributeReward(address userAddress, Stake storage _stake, Pool storage pool, bool updateStakeAccs) private {
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+      if (updateStakeAccs) {
+        _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
+      }
 
       uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
       reward*= getStakeMultiplier(_stake);
