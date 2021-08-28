@@ -23,9 +23,9 @@ struct User {
   address[] referrals;
 }
 
-struct Stake {
+struct StakeData {
   uint256 idx;
-  address stakedToken;
+  address stakedTokenAddress;
   uint256 amount;
   uint256[] stakeAcc;
   uint256 stakeTime;
@@ -35,11 +35,59 @@ struct Stake {
 
 abstract contract BRingFarmingOwnable is Ownable, Pausable {
 
+  event NewReferralConnection(
+    address indexed userAddress,
+    address indexed referrerAddress,
+    uint256 time
+  );
+
+  event Stake(
+    address indexed userAddress,
+    uint256 stakeIdx,
+    address indexed stakedTokenAddress,
+    uint256 amount,
+    uint256 time
+  );
+
+  event Claim(
+    address indexed userAddress,
+    uint256 stakeIdx,
+    address indexed stakedTokenAddress,
+    uint256 time
+  );
+
+  event Unstake(
+    address indexed userAddress,
+    uint256 indexed stakeIdx,
+    address indexed stakedTokenAddress,
+    uint256 amount,
+    uint256 time
+  );
+
+  event RewardPayout(
+    address indexed userAddress,
+    uint256 stakeIdx,
+    address indexed stakedTokenAddress,
+    address indexed tokenAddress,
+    uint256 reward,
+    uint256 time
+  );
+
+  event ReferralPayout(
+    address indexed receiverAddress,
+    address callerAddress,
+    address indexed refererr,
+    address indexed rewardTokenAddress,
+    uint256 percent,
+    uint256 amount,	
+    uint256 time
+  );
+
   address[] public poolAddresses;
   mapping(address => Pool) public pools;
 
   mapping(address => User) public users;
-  mapping(address => Stake[]) public stakes;
+  mapping(address => StakeData[]) public stakes;
 
   uint256 public stakingDuration;
   uint256 public contractDeploymentTime;
@@ -131,10 +179,10 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
   ) external onlyOwner {
     require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
 
-    Stake storage _stake = stakes[userAddress][stakeIdx];
+    StakeData storage _stake = stakes[userAddress][stakeIdx];
     require(_stake.unstakeTime == 0, "Stake was unstaked already");
 
-    Pool storage pool = pools[_stake.stakedToken];
+    Pool storage pool = pools[_stake.stakedTokenAddress];
     require(pool.farmingSequence.length == rewards.length, "Incorrect rewards array length");
 
     // Update stake
@@ -150,14 +198,25 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
       // Transfer reward and pay referral reward
       if (users[userAddress].referrer == address(0x0)) {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 90 / 100);
+        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i] * 90 / 100, block.timestamp);
       } else {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 94 / 100);
+        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i] * 94 / 100, block.timestamp);
         if (!payReferralRewards) {
           continue;
         }
         address ref = users[userAddress].referrer;
         for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
           IERC20(pool.farmingSequence[i]).transfer(ref, rewards[i] * referralPercents[j] / 100);
+          emit ReferralPayout(
+            ref,
+            userAddress,
+            users[ref].referrer,
+            pool.farmingSequence[i],
+            referralPercents[j],
+            rewards[i] * referralPercents[j] / 100,
+            block.timestamp
+          );
 
           ref = users[ref].referrer;
         }
@@ -165,10 +224,12 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     }
 
     // Return stake
-    IERC20(_stake.stakedToken).transfer(userAddress, _stake.amount);
+    IERC20(_stake.stakedTokenAddress).transfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
     pool.lastOperationBlock = block.number;
+
+    emit Unstake(userAddress, stakeIdx, _stake.stakedTokenAddress, _stake.amount, block.timestamp);
   }
 
   function retrieveTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
