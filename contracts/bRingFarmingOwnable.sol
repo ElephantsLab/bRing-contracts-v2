@@ -135,6 +135,9 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * may be updated with this method.
    *
    * @param stakedTokenAddress Address of the staked token contract.
+   * @param minStakeAmount Minimum stake amount.
+   * @param maxStakeAmount Maximum stake amount.
+   * @param totalStakeLimit Total pool staked amount top limit.
    * @param farmingSequence List of farming tokens addresses.
    * @param rewardRates List of rewards per block for every token from the farming sequence list.
    */
