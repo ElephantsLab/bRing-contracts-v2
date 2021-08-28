@@ -166,4 +166,49 @@ contract BRingFarming is BRingFarmingOwnable {
     return 1 + (stakeMultiplier - 1) * (currentStakeTime - _stake.stakeTime) / stakingDuration;
   }
 
+  /**
+   * Returns user's staking details.
+   *
+   * @param userAddress Address of the user.
+   *
+   * @return Tuple with the next elements:
+   *      - List of the stakes idxs.
+   *      - List of the stakes staked tokens addresses.
+   *      - List of the stakes amounts.
+   *      - List of the stakes start timestamps.
+   *      - List of the stakes unstake timestamps
+   *        (stake's activity may be detected by this value (equal 0 - is active))
+   */
+  function viewStakingDetails(address userAddress) external view
+    returns (
+      uint256[] memory,
+      address[] memory,
+      uint256[] memory,
+      uint256[] memory,
+      uint256[] memory
+    )
+  {
+    uint256 userStakesNumber = stakes[userAddress].length;
+
+    uint256[] memory idxs = new uint256[](userStakesNumber);
+    address[] memory stakedTokenAddresses = new address[](userStakesNumber);
+    uint256[] memory amounts = new uint256[](userStakesNumber);
+    uint256[] memory stakeTimes = new uint256[](userStakesNumber);
+    uint256[] memory unstakeTimes = new uint256[](userStakesNumber);
+
+    for (uint8 i = 0; i < uint8(userStakesNumber); i++) {
+      StakeData memory _stake = stakes[userAddress][i];
+
+      idxs[i] = _stake.idx;
+      stakedTokenAddresses[i] = _stake.stakedTokenAddress;
+      amounts[i] = _stake.amount;
+      stakeTimes[i] = _stake.stakeTime;
+      unstakeTimes[i] = _stake.unstakeTime;
+    }
+
+    return (
+      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes
+    );
+  }
+
 }
