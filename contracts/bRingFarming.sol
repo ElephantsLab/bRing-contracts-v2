@@ -21,7 +21,7 @@ contract BRingFarming is BRingFarmingOwnable {
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
 
     // Update user data
-    if (user.referrer == address(0x0) && referrer != address(0x0)) {
+    if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender)) {
       user.referrer = referrer;
       users[referrer].referrals.push(msg.sender);
 
