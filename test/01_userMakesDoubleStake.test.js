@@ -69,4 +69,12 @@ contract("test", async accounts => {
      
     })
 
+    // it("claim reward", async () => {
+    //     // await time.increase(time.duration.minutes(59));
+
+    //     // await bRingFarming.claimReward()
+
+    //     let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     console.log(userStakingDetails[0]);
+    // })
 })
