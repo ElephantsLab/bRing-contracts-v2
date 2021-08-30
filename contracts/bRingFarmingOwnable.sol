@@ -13,7 +13,7 @@ struct Pool {
   address[] farmingSequence;
   uint256[] rewardRates;
 
-  uint256[] rewardsAccPerShare;
+  uint256[10] rewardsAccPerShare;
   uint256 lastOperationBlock;
   uint256 totalStaked;
 }
@@ -27,7 +27,7 @@ struct StakeData {
   uint256 idx;
   address stakedTokenAddress;
   uint256 amount;
-  uint256[] stakeAcc;
+  uint256[10] stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
   //TODO: add stake and unstake block numbers
