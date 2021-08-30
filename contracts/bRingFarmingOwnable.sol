@@ -199,30 +199,26 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
       }
 
       // Transfer reward and pay referral reward
-      if (users[userAddress].referrer == address(0x0)) {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 90 / 100);
-        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i] * 90 / 100, block.timestamp);
-      } else {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i] * 94 / 100);
-        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i] * 94 / 100, block.timestamp);
-        if (!payReferralRewards) {
-          continue;
-        }
-        address ref = users[userAddress].referrer;
-        for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
-          IERC20(pool.farmingSequence[i]).transfer(ref, rewards[i] * referralPercents[j] / 100);
-          emit ReferralPayout(
-            ref,
-            userAddress,
-            users[ref].referrer,
-            pool.farmingSequence[i],
-            referralPercents[j],
-            rewards[i] * referralPercents[j] / 100,
-            block.timestamp
-          );
+      IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i]);
+      emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i], block.timestamp);
 
-          ref = users[ref].referrer;
-        }
+      if (!payReferralRewards) {
+        continue;
+      }
+      address ref = users[userAddress].referrer;
+      for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
+        IERC20(pool.farmingSequence[i]).transfer(ref, rewards[i] * referralPercents[j] / 100);
+        emit ReferralPayout(
+          ref,
+          userAddress,
+          users[ref].referrer,
+          pool.farmingSequence[i],
+          referralPercents[j],
+          rewards[i] * referralPercents[j] / 100,
+          block.timestamp
+        );
+
+        ref = users[ref].referrer;
       }
     }
 
