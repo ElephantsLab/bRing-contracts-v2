@@ -11,7 +11,7 @@ const {
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("user should be able to do two stakes in a row one by one", async accounts => {
+contract("user should be able claim reward without unstake", async accounts => {
     const [ deployer, firstAddr, secondAddr, thirdAddr ] = accounts;
 
     let bRingFarming;
@@ -24,7 +24,7 @@ contract("user should be able to do two stakes in a row one by one", async accou
     let maxStakeAmount = 500000; // 500 000
     let totalStakeLimit = 1000000; // 1 000 000
 
-    let stakeAmount = 1000;
+    let stakeAmount = 10000;
 
     before(async () => {
         // tokens deployed
@@ -43,11 +43,11 @@ contract("user should be able to do two stakes in a row one by one", async accou
     })
 
     it("config Pool", async () => {
-        const decimals = await firstToken.decimals();
+        const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [1, 2, 3];
+        let tokenRewards = [10, 20, 30];
 
-        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+        await bRingFarming.configPool(secondTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
             [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
@@ -70,34 +70,61 @@ contract("user should be able to do two stakes in a row one by one", async accou
         }
     })
 
-    it("user address should have firstToken in his address", async () => {
-        const decimals = await firstToken.decimals();
+    it("user address should have secondToken in his address", async () => {
+        const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await firstToken.transfer(firstAddr, (new BN((stakeAmount * 2))).mul(tokenbits), { from: deployer });
-        let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
-        assert.equal(firstUserBalance.valueOf(), Number((new BN((stakeAmount * 2))).mul(tokenbits)), "user tokens balance is wrong");
+        await secondToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+        let firstUserBalance = await secondToken.balanceOf.call(firstAddr);
+        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
     })
 
-    it("user should be able to do first stake", async () => {
-        const decimals = await firstToken.decimals();
+    it("user makes stake", async () => {
+        const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await secondToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
-    it("user should be able to do second stake", async () => {
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+    it("user should be able claim reward without unstake", async () => {
+        await time.increase(time.duration.days(1));
 
-        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
-     
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        assert.equal(stakeDetails[0].length, 2, "user stake amount is wrong");
-    })   
+        let stakeId = stakeDetails[0][0];
+        // console.log(stakeDetails[0][0]);
+
+        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
+        console.log(Number(stakeRew[0]));
+        console.log(Number(stakeRew[1]));
+        console.log(Number(stakeRew[2]));
+
+        expect(Number(stakeRew[0])).to.be.above(0);
+        expect(Number(stakeRew[1])).to.be.above(0);
+        expect(Number(stakeRew[2])).to.be.above(0);
+
+        // await bRingFarming.claimReward(stakeId, { from: firstAddr });
+        // console.log(await secondToken.balanceOf.call(firstAddr));
+        // console.log(await firstToken.balanceOf.call(firstAddr));
+        // console.log(await thirdToken.balanceOf.call(firstAddr));
+
+
+    })
+
+    // it("unstake", async () => {
+    //     await time.increase(time.duration.days(1));
+
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][0];
+
+    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
+
+    //     let secondTokenBalance = await secondToken.balanceOf.call(firstAddr);
+    //     console.log(web3.utils.fromWei(String(secondTokenBalance), 'ether'));
+    //     console.log(await firstToken.balanceOf.call(firstAddr));
+    //     console.log(await thirdToken.balanceOf.call(firstAddr));
+    // })
 })

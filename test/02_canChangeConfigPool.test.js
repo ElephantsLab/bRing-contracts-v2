@@ -24,7 +24,8 @@ contract("user should be able to do two stakes in a row one by one", async accou
     let maxStakeAmount = 500000; // 500 000
     let totalStakeLimit = 1000000; // 1 000 000
 
-    let stakeAmount = 1000;
+    let firstStakeAmount = 1000;
+    let secondStakeAmount = 100000; // 100 000
 
     before(async () => {
         // tokens deployed
@@ -74,30 +75,42 @@ contract("user should be able to do two stakes in a row one by one", async accou
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await firstToken.transfer(firstAddr, (new BN((stakeAmount * 2))).mul(tokenbits), { from: deployer });
+        await firstToken.transfer(firstAddr, (new BN((firstStakeAmount + secondStakeAmount))).mul(tokenbits), { from: deployer });
         let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
-        assert.equal(firstUserBalance.valueOf(), Number((new BN((stakeAmount * 2))).mul(tokenbits)), "user tokens balance is wrong");
+        assert.equal(firstUserBalance.valueOf(), Number((new BN((firstStakeAmount + secondStakeAmount))).mul(tokenbits)), "user tokens balance is wrong");
     })
 
     it("user should be able to do first stake", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await firstToken.approve(bRingFarmingAddress, (new BN(firstStakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(firstStakeAmount)).mul(tokenbits), { from: firstAddr });
     
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
-    it("user should be able to do second stake", async () => {
+    it("re-config Pool", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+        let tokenRewards = [1, 2, 3];
+
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+            (new BN(secondStakeAmount / 2)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
+            [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
+            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+    })
+
+    it("should revert stake than begger maxStakeAmount", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
-     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        assert.equal(stakeDetails[0].length, 2, "user stake amount is wrong");
-    })   
+        await firstToken.approve(bRingFarmingAddress, (new BN(secondStakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        await expectRevert(
+            bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(secondStakeAmount)).mul(tokenbits), { from: firstAddr }),
+            'Invalid stake amount value'
+        );
+    })
 })
