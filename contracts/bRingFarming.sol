@@ -7,6 +7,8 @@ import "./BRingFarmingOwnable.sol";
 
 contract BRingFarming is BRingFarmingOwnable {
 
+  uint256 private constant ACC_PRECISION = 1e12;
+
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
     require(amount > 0, "Invalid stake amount value");
     require(block.timestamp < contractDeploymentTime + stakingDuration, "Staking is finished");
@@ -108,7 +110,7 @@ contract BRingFarming is BRingFarmingOwnable {
         _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
       }
 
-      uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]);
+      uint256 reward = _stake.amount * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i]) / ACC_PRECISION;
       reward*= getStakeMultiplier(_stake);
 
       // Transfer reward and pay referral reward
@@ -140,7 +142,7 @@ contract BRingFarming is BRingFarmingOwnable {
 
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) override internal view returns (uint256) {
     return pool.rewardsAccPerShare[farmingSequenceIdx]
-        + (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
+        + ACC_PRECISION * (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
   }
 
   function getStakeRewards(address userAddress, uint256 stakeIdx) external view returns (uint256[10] memory rewards) {
@@ -152,7 +154,7 @@ contract BRingFarming is BRingFarmingOwnable {
     }
 
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i]) * _stake.amount;
+      rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i]) * _stake.amount / ACC_PRECISION;
       rewards[i]*= getStakeMultiplier(_stake);
     }
   }

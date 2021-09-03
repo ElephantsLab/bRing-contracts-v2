@@ -11,7 +11,7 @@ const {
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("user should be able claim reward without unstake", async accounts => {
+contract("check pause and unpause logic", async accounts => {
     const [ deployer, firstAddr, secondAddr, thirdAddr ] = accounts;
 
     let bRingFarming;
@@ -24,7 +24,7 @@ contract("user should be able claim reward without unstake", async accounts => {
     let maxStakeAmount = 500000; // 500 000
     let totalStakeLimit = 1000000; // 1 000 000
 
-    let stakeAmount = 10000;
+    let stakeAmount = 1000;
 
     before(async () => {
         // tokens deployed
@@ -43,11 +43,11 @@ contract("user should be able claim reward without unstake", async accounts => {
     })
 
     it("config Pool", async () => {
-        const decimals = await secondToken.decimals();
+        const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [10, 20, 30];
+        let tokenRewards = [100, 200, 300];
 
-        await bRingFarming.configPool(secondTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
             [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
@@ -70,27 +70,41 @@ contract("user should be able claim reward without unstake", async accounts => {
         }
     })
 
-    it("user address should have secondToken in his address", async () => {
-        const decimals = await secondToken.decimals();
+    it("user address should have firstToken in his address", async () => {
+        const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await secondToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
-        let firstUserBalance = await secondToken.balanceOf.call(firstAddr);
-        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
+        await firstToken.transfer(firstAddr, (new BN((stakeAmount * 2))).mul(tokenbits), { from: deployer });
+        let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
+        assert.equal(firstUserBalance.valueOf(), Number((new BN((stakeAmount * 2))).mul(tokenbits)), "user tokens balance is wrong");
     })
 
-    it("user makes stake", async () => {
-        const decimals = await secondToken.decimals();
+    it("user should be able to do first stake", async () => {
+        const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await secondToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
-    it("user should be able claim reward without unstake", async () => {
+    it("should revert stake after called pause by owner", async () => {
+        await bRingFarming.pause({ from: deployer });
+
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await expectRevert(
+            bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr }),
+            'Pausable: paused'
+        );
+    })
+
+    // может ли насчитываться награда при остановленом конракте
+    it("should revert claim reward if contract paused", async () => {
         await time.increase(time.duration.days(1));
 
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
@@ -101,29 +115,54 @@ contract("user should be able claim reward without unstake", async accounts => {
         console.log(Number(stakeRew[1]));
         console.log(Number(stakeRew[2]));
 
-        expect(Number(stakeRew[0])).to.be.above(0);
-        expect(Number(stakeRew[1])).to.be.above(0);
-        expect(Number(stakeRew[2])).to.be.above(0);
-
+        await expectRevert(
+            bRingFarming.claimReward(stakeId, { from: firstAddr }),
+            'Pausable: paused'
+        ); 
         // await bRingFarming.claimReward(stakeId, { from: firstAddr });
         // console.log(await secondToken.balanceOf.call(firstAddr));
         // console.log(await firstToken.balanceOf.call(firstAddr));
         // console.log(await thirdToken.balanceOf.call(firstAddr));
-
-
     })
 
-    // it("unstake", async () => {
-    //     await time.increase(time.duration.days(1));
+    it("should revert unstake if contract paused", async () => {
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
 
-    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-    //     let stakeId = stakeDetails[0][0];
+        await expectRevert(
+            bRingFarming.unstake(stakeId, { from: firstAddr }),
+            'Pausable: paused'
+        );        
+    })
 
-    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
+    it("user should be able to do stake after unpause", async () => {
+        await bRingFarming.unpause({ from: deployer });
 
-    //     let secondTokenBalance = await secondToken.balanceOf.call(firstAddr);
-    //     console.log(web3.utils.fromWei(String(secondTokenBalance), 'ether'));
-    //     console.log(await firstToken.balanceOf.call(firstAddr));
-    //     console.log(await thirdToken.balanceOf.call(firstAddr));
-    // })
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+    
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        assert.equal(stakeDetails[0].length, 2, "user stake amount is wrong");
+    })
+
+    it("user should be able to claim reward after unpause", async () => {
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        await bRingFarming.claimReward(stakeId, { from: firstAddr });
+
+        // check sum
+    })
+
+    it("user should be able unstake tokens", async () => {
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        await bRingFarming.unstake(stakeId, { from: firstAddr });
+
+        // check sum
+    })
 })

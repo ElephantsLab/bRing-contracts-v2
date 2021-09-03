@@ -6,3 +6,4 @@ node_modules/
 .addresses
 *.tsv
 .secret
+test.test.js

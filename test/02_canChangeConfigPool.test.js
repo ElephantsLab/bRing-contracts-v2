@@ -11,7 +11,7 @@ const {
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("user should be able to do two stakes in a row one by one", async accounts => {
+contract("owner should be able change config pool", async accounts => {
     const [ deployer, firstAddr, secondAddr, thirdAddr ] = accounts;
 
     let bRingFarming;

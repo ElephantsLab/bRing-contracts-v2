@@ -8,7 +8,8 @@
   },
   "scripts": {
     "compile": "truffle compile --all",
-    "build": "sol-merger -c \"./contracts/**/*.sol\" ./build/dist"
+    "build": "sol-merger -c \"./contracts/**/*.sol\" ./build/dist",
+    "test": "truffle compile --all && truffle test"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,7 @@
   },
   "homepage": "https://github.com/ElephantsLab/bRing-contracts-v2#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0"
+    "@openzeppelin/contracts": "^4.3.1"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.13",
