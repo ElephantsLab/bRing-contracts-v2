@@ -107,15 +107,16 @@ contract BRingFarming is BRingFarmingOwnable {
   function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccs) private {
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
-      if (updateStakeAccs) {
-        _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
-      }
 
       uint256 reward = getStakeMultiplier(_stake)
         * _stake.amount
         * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
         / ACC_PRECISION
         / STAKE_MULTIPLIER_PRECISION;
+
+      if (updateStakeAccs) {
+        _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
+      }
 
       // Transfer reward and pay referral reward
       if (users[userAddress].referrer == address(0x0)) {
