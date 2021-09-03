@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/ElephantsLab/bRing-contracts-v2#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0"
+    "@openzeppelin/contracts": "^4.3.1"
   },
   "devDependencies": {
     "sol-merger": "^3.1.0"
