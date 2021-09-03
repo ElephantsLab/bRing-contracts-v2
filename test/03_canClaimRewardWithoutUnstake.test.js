@@ -45,7 +45,7 @@ contract("user should be able claim reward without unstake", async accounts => {
     it("config Pool", async () => {
         const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [10, 20, 30];
+        let tokenRewards = [1, 2, 3];
 
         await bRingFarming.configPool(secondTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
@@ -105,12 +105,14 @@ contract("user should be able claim reward without unstake", async accounts => {
         expect(Number(stakeRew[1])).to.be.above(0);
         expect(Number(stakeRew[2])).to.be.above(0);
 
-        // await bRingFarming.claimReward(stakeId, { from: firstAddr });
-        // console.log(await secondToken.balanceOf.call(firstAddr));
-        // console.log(await firstToken.balanceOf.call(firstAddr));
-        // console.log(await thirdToken.balanceOf.call(firstAddr));
+        await bRingFarming.claimReward(stakeId, { from: firstAddr });
+        console.log(Number(await secondToken.balanceOf.call(firstAddr)));
+        console.log(Number(await firstToken.balanceOf.call(firstAddr)));
+        console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
 
-
+        expect(Number(await secondToken.balanceOf.call(firstAddr))).to.be.above(0);
+        expect(Number(await firstToken.balanceOf.call(firstAddr))).to.be.above(0);
+        expect(Number(await thirdToken.balanceOf.call(firstAddr))).to.be.above(0);
     })
 
     // it("unstake", async () => {

@@ -45,7 +45,7 @@ contract("check if reward given by time periods", async accounts => {
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [40000, 50000, 60000];
+        let tokenRewards = [4, 5, 6];
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
@@ -102,35 +102,42 @@ contract("check if reward given by time periods", async accounts => {
         }
     })
 
-    it("user should NOT get revard after claim tokens in 59 minutes", async () => {
-        await time.increase(time.duration.minutes(59));
+    // it("user should NOT get revard after claim tokens in 59 minutes", async () => {
+
+    //     console.log("-------- user balance -----------");
+    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
+    //     console.log("--------  -----------");
+
+    //     await time.increase(time.duration.seconds(1));
+
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][0];
+
+    //     let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
+    //     console.log("-------- start 59 min -----------");
+    //     console.log("-------- getStakeRewards -----------");
+    //     console.log(Number(stakeRew[0]));
+    //     console.log(Number(stakeRew[1]));
+    //     console.log(Number(stakeRew[2]));
+    //     await bRingFarming.claimReward(stakeId, { from: firstAddr });
+
+    //     console.log("-------- user balance -----------");
+    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
+    //     console.log("-------- end 59 min -----------");
+    // })
+
+    it("user should get revard after claim tokens in 1 hour", async () => {
+        await time.increase(time.duration.hours(1));
 
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log("-------- start 59 min -----------");
-        console.log("-------- getStakeRewards -----------");
-        console.log(Number(stakeRew[0]));
-        console.log(Number(stakeRew[1]));
-        console.log(Number(stakeRew[2]));
-        await bRingFarming.claimReward(stakeId, { from: firstAddr });
-
-        console.log("-------- user balance -----------");
-        console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-        console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-        console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
-        console.log("-------- end 59 min -----------");
-    })
-
-    it("user should get revard after claim tokens in 90 days", async () => {
-        await time.increase(time.duration.days(90));
-
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][0];
-
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log("-------- start 90 days -----------");
+        console.log("-------- after 1 hour -----------");
         console.log("-------- getStakeRewards -----------");
         console.log(Number(stakeRew[0]));
         console.log(Number(stakeRew[1]));
@@ -138,10 +145,28 @@ contract("check if reward given by time periods", async accounts => {
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
 
+        console.log("-------- claimReward -----------");
         console.log("-------- user balance -----------");
         console.log(Number(await firstToken.balanceOf.call(firstAddr)));
         console.log(Number(await secondToken.balanceOf.call(firstAddr)));
         console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
-        console.log("-------- end 90 days -----------");
+
+        expect(Number(await firstToken.balanceOf.call(firstAddr))).to.be.above(0);
+        expect(Number(await secondToken.balanceOf.call(firstAddr))).to.be.above(0);
+        expect(Number(await thirdToken.balanceOf.call(firstAddr))).to.be.above(0);
+        console.log("-------- end claimReward -----------");
     })
+
+    // it("user should be able unstake tokens", async () => {
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][0];
+
+    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
+
+    //     console.log("-------- unstake -----------");
+    //     console.log("-------- user balance -----------");
+    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
+    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
+    // })
 })
