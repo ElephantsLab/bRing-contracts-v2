@@ -90,42 +90,27 @@ contract("user should be able claim reward without unstake", async accounts => {
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
-    it("user should be able claim reward without unstake", async () => {
+    it("user should be able view stake reward", async () => {
         await time.increase(time.duration.days(1));
 
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log(Number(stakeRew[0]));
-        console.log(Number(stakeRew[1]));
-        console.log(Number(stakeRew[2]));
 
         expect(Number(stakeRew[0])).to.be.above(0);
         expect(Number(stakeRew[1])).to.be.above(0);
         expect(Number(stakeRew[2])).to.be.above(0);
+    })
+
+    it("user should be able claim reward without unstake", async () => {
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
-        console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-        console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-        console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
 
         expect(Number(await secondToken.balanceOf.call(firstAddr))).to.be.above(0);
         expect(Number(await firstToken.balanceOf.call(firstAddr))).to.be.above(0);
         expect(Number(await thirdToken.balanceOf.call(firstAddr))).to.be.above(0);
     })
-
-    // it("unstake", async () => {
-    //     await time.increase(time.duration.days(1));
-
-    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-    //     let stakeId = stakeDetails[0][0];
-
-    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-    //     let secondTokenBalance = await secondToken.balanceOf.call(firstAddr);
-    //     console.log(web3.utils.fromWei(String(secondTokenBalance), 'ether'));
-    //     console.log(await firstToken.balanceOf.call(firstAddr));
-    //     console.log(await thirdToken.balanceOf.call(firstAddr));
-    // })
 })

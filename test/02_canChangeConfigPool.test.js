@@ -102,7 +102,7 @@ contract("owner should be able change config pool", async accounts => {
             [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
     })
 
-    it("should revert stake than begger maxStakeAmount", async () => {
+    it("should revert stake than bigger maxStakeAmount", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 

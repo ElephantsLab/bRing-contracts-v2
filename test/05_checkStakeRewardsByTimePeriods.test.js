@@ -147,26 +147,30 @@ contract("check if reward given by time periods", async accounts => {
 
         console.log("-------- claimReward -----------");
         console.log("-------- user balance -----------");
-        console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-        console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-        console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
+        console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
 
-        expect(Number(await firstToken.balanceOf.call(firstAddr))).to.be.above(0);
-        expect(Number(await secondToken.balanceOf.call(firstAddr))).to.be.above(0);
-        expect(Number(await thirdToken.balanceOf.call(firstAddr))).to.be.above(0);
+        expect(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
+        expect(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
+        expect(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
+
+        assert.equal(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })),
+            Number(stakeRew[0]), "firstToken balance after claimReward not equal getStakeRewards");
+        assert.equal(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })),
+            Number(stakeRew[1]), "secondToken balance after claimReward not equal getStakeRewards");
+        assert.equal(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })),
+            Number(stakeRew[2]), "thirdToken balance after claimReward not equal getStakeRewards");
+
         console.log("-------- end claimReward -----------");
+
+        await bRingFarming.unstake(stakeId, { from: firstAddr });
+
+        console.log("-------- unstake -----------");
+        console.log("-------- user balance -----------");
+        console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
     })
 
-    // it("user should be able unstake tokens", async () => {
-    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-    //     let stakeId = stakeDetails[0][0];
-
-    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-    //     console.log("-------- unstake -----------");
-    //     console.log("-------- user balance -----------");
-    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
-    // })
 })
