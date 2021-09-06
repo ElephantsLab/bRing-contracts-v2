@@ -177,6 +177,20 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   /**
+   * Returns data for potential reward calculation.
+   * REQUIRED JUST FOR A DAPP
+   *
+   * @param stakedTokenAddress Pool staked token address.
+   *
+   * @return Tuple with the next elements:
+   *      - Pool total stake for the current moment of time
+   *      - Actual block number
+   */
+  function getPotentialRewardCalculationData(address stakedTokenAddress) external view returns (uint256, uint256) {
+    return (pools[stakedTokenAddress].totalStaked, block.number);
+  }
+
+  /**
    * Returns user's staking details.
    *
    * @param userAddress Address of the user.
