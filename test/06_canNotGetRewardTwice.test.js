@@ -11,7 +11,7 @@ const {
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("check if reward not bigger after stakingDuration", async accounts => {
+contract("check if user can not get reward twice for the same period", async accounts => {
     const [ deployer, firstAddr ] = accounts;
 
     let bRingFarming;
@@ -26,8 +26,7 @@ contract("check if reward not bigger after stakingDuration", async accounts => {
 
     let stakeAmount = 10000;
 
-    let firstTokenBalance90d, secondTokenBalance90d, thirdTokenBalance90d;
-    let firstTokenBalance91d, secondTokenBalance91d, thirdTokenBalance91d;
+    let firstTokenBalance, secondTokenBalance, thirdTokenBalance;
 
     before(async () => {
         // tokens deployed
@@ -93,101 +92,40 @@ contract("check if reward not bigger after stakingDuration", async accounts => {
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
-    it("user should get revard after claim tokens after 90 days", async () => {
+    it("user should NOT get reward twice", async () => {
         let stakingDurationSeconds = Number(await bRingFarming.stakingDuration({ from: deployer }));
         await time.increase(time.duration.seconds(stakingDurationSeconds));
 
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log("-------- after 90 days -----------");
-        console.log("-------- getStakeRewards -----------");
-        console.log(Number(stakeRew[0]));
-        console.log(Number(stakeRew[1]));
-        console.log(Number(stakeRew[2]));
-
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
 
         
-        firstTokenBalance90d = Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }));
-        secondTokenBalance90d = Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }));
-        thirdTokenBalance90d = Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }));
+        firstTokenBalance = Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }));
+        secondTokenBalance = Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }));
+        thirdTokenBalance = Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }));
 
-        console.log("-------- claimReward after 90 days -----------");
+        console.log("-------- claimReward 1 -----------");
         console.log("-------- user balance -----------");
-        console.log(firstTokenBalance90d);
-        console.log(secondTokenBalance90d);
-        console.log(thirdTokenBalance90d);
+        console.log(firstTokenBalance);
+        console.log(secondTokenBalance);
+        console.log(thirdTokenBalance);
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
 
-        console.log("-------- claimReward after 90 days (2) -----------");
+        console.log("-------- claimReward 2 -----------");
         console.log("-------- user balance -----------");
-        console.log(firstTokenBalance90d);
-        console.log(secondTokenBalance90d);
-        console.log(thirdTokenBalance90d);
+        console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
+        console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
 
-        expect(firstTokenBalance90d).to.be.above(0);
-        expect(secondTokenBalance90d).to.be.above(0);       
-        expect(thirdTokenBalance90d).to.be.above(0);
-
-        // console.log("-------- unstake -----------");
-        // await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        // console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
-    })
-
-    it("user should NOT get reward twice", async () => {
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][0];
-
-        await bRingFarming.claimReward(stakeId, { from: firstAddr });
-
-        assert.equal(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })), firstTokenBalance90d,
+        assert.equal(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })), firstTokenBalance,
             "user firstToken balance after claimReward is wrong");
-        assert.equal(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })), secondTokenBalance90d,
+        assert.equal(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })), secondTokenBalance,
             "user secondToken balance after claimReward is wrong");
-        assert.equal(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })), thirdTokenBalance90d,
+        assert.equal(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })), thirdTokenBalance,
             "user thirdToken balance after claimReward is wrong");  
-    })
-
-    it("user should NOT get revard after claim tokens after 91 days", async () => {
-        await time.increase(time.duration.days(1));
-
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][0];
-
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log("-------- after 91 days -----------");
-        console.log("-------- getStakeRewards -----------");
-        console.log(Number(stakeRew[0]));
-        console.log(Number(stakeRew[1]));
-        console.log(Number(stakeRew[2]));
-
-        await bRingFarming.claimReward(stakeId, { from: firstAddr });
-
-        console.log("-------- claimReward after 91 days -----------");
-        console.log("-------- user balance -----------");
-        firstTokenBalance91d = Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }));
-        secondTokenBalance91d = Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }));
-        thirdTokenBalance91d = Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }));
-        console.log(firstTokenBalance91d);
-        console.log(secondTokenBalance91d);
-        console.log(thirdTokenBalance91d);
-
-        // console.log("-------- unstake -----------");
-        // await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        // console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
-
-        assert.equal(firstTokenBalance90d, firstTokenBalance91d, "firstToken balance after 91 days is wrong");
-        assert.equal(secondTokenBalance90d, secondTokenBalance91d, "secondToken balance after 91 days is wrong");
-        assert.equal(thirdTokenBalance90d, thirdTokenBalance91d, "thirdToken balance after 91 days is wrong");
     })
 
 })
