@@ -11,7 +11,7 @@ const {
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("check if reward given by time periods", async accounts => {
+contract("check reward with different referral levels and without referrer", async accounts => {
     const [ deployer, firstAddr, secondAddr, thirdAddr, fourthAddr, fifthAddr, sixthAddr ] = accounts;
 
     let bRingFarming;
@@ -45,7 +45,7 @@ contract("check if reward given by time periods", async accounts => {
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [4, 5, 6];
+        let tokenRewards = [1, 2, 3];
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
@@ -84,93 +84,73 @@ contract("check if reward given by time periods", async accounts => {
         }
     })
 
-    it("users should be able to do stake", async () => {
-        let users = [firstAddr, secondAddr, thirdAddr, fourthAddr, fifthAddr, sixthAddr];
+    it("user makes stake without referrer", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        // console.log(await bRingFarming.users(firstAddr, { from: firstAddr }));
+    })
+
+    it("users make stake with referrer", async () => {
+        let users = [secondAddr, thirdAddr, fourthAddr, fifthAddr, sixthAddr];
         let stakeDetails;
 
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        for(let i = 0; i < users.length; i++){
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+
+        // console.log(await bRingFarming.users(secondAddr, { from: secondAddr }));
+
+        for(let i = 1; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.stake(users[i-1], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+
+            // console.log(`${users[i]}`, await bRingFarming.users(users[i], { from: users[i] }));
 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
 
+            // console.log(stakeDetails);
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
         }
     })
 
-    // it("user should NOT get revard after claim tokens in 59 minutes", async () => {
-
-    //     console.log("-------- user balance -----------");
-    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
-    //     console.log("--------  -----------");
-
-    //     await time.increase(time.duration.seconds(1));
-
-    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-    //     let stakeId = stakeDetails[0][0];
-
-    //     let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-    //     console.log("-------- start 59 min -----------");
-    //     console.log("-------- getStakeRewards -----------");
-    //     console.log(Number(stakeRew[0]));
-    //     console.log(Number(stakeRew[1]));
-    //     console.log(Number(stakeRew[2]));
-    //     await bRingFarming.claimReward(stakeId, { from: firstAddr });
-
-    //     console.log("-------- user balance -----------");
-    //     console.log(Number(await firstToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await secondToken.balanceOf.call(firstAddr)));
-    //     console.log(Number(await thirdToken.balanceOf.call(firstAddr)));
-    //     console.log("-------- end 59 min -----------");
-    // })
-
-    it("user should get revard after claim tokens in 1 hour", async () => {
+    it("get reward", async () => {
         await time.increase(time.duration.hours(1));
+        let users = [firstAddr, secondAddr, thirdAddr, fourthAddr, fifthAddr, sixthAddr];
+        let stakeRew, stakeDetails, stakeId;
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][0];
+        let poolsData = await bRingFarming.pools(firstTokenAddress, { from: firstAddr });
+        console.log(Number(poolsData.lastOperationBlock));
+        // console.log(Number(poolsData.totalStaked));
+        console.log(Number(poolsData[3]));
 
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
-        console.log("-------- after 1 hour -----------");
-        console.log("-------- getStakeRewards -----------");
-        console.log(Number(stakeRew[0]));
-        console.log(Number(stakeRew[1]));
-        console.log(Number(stakeRew[2]));
+        // for(let i = 0; i < users.length; i++){
+        //     stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+        //     stakeId = stakeDetails[0][0];
 
-        await bRingFarming.claimReward(stakeId, { from: firstAddr });
+        //     stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, { from: users[i] });
+        //     console.log("-------- after 1 hour -----------");
+        //     console.log("-------- getStakeRewards -----------");
+        //     console.log(Number(stakeRew[0]));
+        //     console.log(Number(stakeRew[1]));
+        //     console.log(Number(stakeRew[2]));
 
-        console.log("-------- claimReward -----------");
-        console.log("-------- user balance -----------");
-        console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
 
-        expect(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
-        expect(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
-        expect(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }))).to.be.above(0);
+        //     await bRingFarming.claimReward(stakeId, { from: users[i] });
 
-        assert.equal(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })),
-            Number(stakeRew[0]), "firstToken balance after claimReward not equal getStakeRewards");
-        assert.equal(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })),
-            Number(stakeRew[1]), "secondToken balance after claimReward not equal getStakeRewards");
-        assert.equal(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })),
-            Number(stakeRew[2]), "thirdToken balance after claimReward not equal getStakeRewards");
-
-        console.log("-------- end claimReward -----------");
-
-        await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        console.log("-------- unstake -----------");
-        console.log("-------- user balance -----------");
-        console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
+        //     console.log("-------- claimReward -----------");
+        //     console.log("-------- user balance -----------");
+        //     console.log(Number(await firstToken.balanceOf(users[i], { from: users[i] })));
+        //     console.log(Number(await secondToken.balanceOf(users[i], { from: users[i] })));
+        //     console.log(Number(await thirdToken.balanceOf(users[i], { from: users[i] })));
+        // }
     })
+
 
 })
