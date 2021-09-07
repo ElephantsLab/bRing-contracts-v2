@@ -30,7 +30,8 @@ struct StakeData {
   uint256[10] stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
-  //TODO: add stake and unstake block numbers
+  uint256 stakeBlockNumber;
+  //TODO: add unstake block number
 }
 
 abstract contract BRingFarmingOwnable is Ownable, Pausable {
