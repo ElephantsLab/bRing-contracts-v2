@@ -44,7 +44,6 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakedTokenAddress = stakedTokenAddress;
     _stake.amount = amount;
     _stake.stakeTime = block.timestamp;
-    _stake.stakeBlockNumber = block.number;
 
     // Update pool data
     if (pool.totalStaked > 0) {
@@ -56,7 +55,7 @@ contract BRingFarming is BRingFarmingOwnable {
     }
 
     pool.totalStaked+= amount;
-    pool.lastOperationBlock = block.number;
+    pool.lastOperationTime = block.timestamp;
 
     stakes[msg.sender].push(_stake);
 
@@ -79,7 +78,10 @@ contract BRingFarming is BRingFarmingOwnable {
     IERC20(_stake.stakedTokenAddress).transfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
-    pool.lastOperationBlock = block.number;
+    pool.lastOperationTime = block.timestamp;
+    if (pool.lastOperationTime > contractDeploymentTime + stakingDuration) {
+      pool.lastOperationTime = contractDeploymentTime + stakingDuration;
+    }
 
     emit Unstake(userAddress, stakeIdx, _stake.stakedTokenAddress, _stake.amount, block.timestamp);
   }
@@ -93,7 +95,10 @@ contract BRingFarming is BRingFarmingOwnable {
     Pool storage pool = pools[_stake.stakedTokenAddress];
     distributeReward(msg.sender, _stake, pool, true);
 
-    pool.lastOperationBlock = block.number;
+    pool.lastOperationTime = block.timestamp;
+    if (pool.lastOperationTime > contractDeploymentTime + stakingDuration) {
+      pool.lastOperationTime = contractDeploymentTime + stakingDuration;
+    }
 
     emit Claim(msg.sender, stakeIdx, _stake.stakedTokenAddress, block.timestamp);
   }
@@ -148,8 +153,17 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) override internal view returns (uint256) {
+    uint256 actualTime = block.timestamp;
+    if (actualTime > contractDeploymentTime + stakingDuration) {
+      actualTime = contractDeploymentTime + stakingDuration;
+    }
+
+    if (actualTime <= pool.lastOperationTime) {
+      return pool.rewardsAccPerShare[farmingSequenceIdx];
+    }
+
     return pool.rewardsAccPerShare[farmingSequenceIdx]
-        + ACC_PRECISION * (block.number - pool.lastOperationBlock) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
+        + ACC_PRECISION * (actualTime - pool.lastOperationTime) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
   }
 
   function getStakeRewards(address userAddress, uint256 stakeIdx) external view returns (uint256[10] memory rewards) {
@@ -179,20 +193,6 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   /**
-   * Returns data for potential reward calculation.
-   * REQUIRED JUST FOR A DAPP
-   *
-   * @param stakedTokenAddress Pool staked token address.
-   *
-   * @return Tuple with the next elements:
-   *      - Pool total stake for the current moment of time
-   *      - Actual block number
-   */
-  function getPotentialRewardCalculationData(address stakedTokenAddress) external view returns (uint256, uint256) {
-    return (pools[stakedTokenAddress].totalStaked, block.number);
-  }
-
-  /**
    * Returns user's staking details.
    *
    * @param userAddress Address of the user.
@@ -212,7 +212,6 @@ contract BRingFarming is BRingFarmingOwnable {
       address[] memory,
       uint256[] memory,
       uint256[] memory,
-      uint256[] memory,
       uint256[] memory
     )
   {
@@ -221,7 +220,6 @@ contract BRingFarming is BRingFarmingOwnable {
     uint256[] memory amounts = new uint256[](stakes[userAddress].length);
     uint256[] memory stakeTimes = new uint256[](stakes[userAddress].length);
     uint256[] memory unstakeTimes = new uint256[](stakes[userAddress].length);
-    uint256[] memory stakeBlocks = new uint256[](stakes[userAddress].length);
 
     for (uint8 i = 0; i < uint8(stakes[userAddress].length); i++) {
       idxs[i] = stakes[userAddress][i].idx;
@@ -229,11 +227,10 @@ contract BRingFarming is BRingFarmingOwnable {
       amounts[i] = stakes[userAddress][i].amount;
       stakeTimes[i] = stakes[userAddress][i].stakeTime;
       unstakeTimes[i] = stakes[userAddress][i].unstakeTime;
-      stakeBlocks[i] = stakes[userAddress][i].stakeBlockNumber;
     }
 
     return (
-      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes, stakeBlocks
+      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes
     );
   }
 
