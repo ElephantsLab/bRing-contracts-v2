@@ -24,7 +24,8 @@ contract BRingFarming is BRingFarmingOwnable {
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
 
     // Update user data
-    if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender)) {
+    user.registrationTime = block.timestamp;
+    if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender && isActiveUser(referrer))) {
       user.referrer = referrer;
       users[referrer].referrals.push(msg.sender);
 
@@ -43,6 +44,7 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakedTokenAddress = stakedTokenAddress;
     _stake.amount = amount;
     _stake.stakeTime = block.timestamp;
+    _stake.stakeBlockNumber = block.number;
 
     // Update pool data
     if (pool.totalStaked > 0) {
@@ -177,6 +179,20 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   /**
+   * Returns data for potential reward calculation.
+   * REQUIRED JUST FOR A DAPP
+   *
+   * @param stakedTokenAddress Pool staked token address.
+   *
+   * @return Tuple with the next elements:
+   *      - Pool total stake for the current moment of time
+   *      - Actual block number
+   */
+  function getPotentialRewardCalculationData(address stakedTokenAddress) external view returns (uint256, uint256) {
+    return (pools[stakedTokenAddress].totalStaked, block.number);
+  }
+
+  /**
    * Returns user's staking details.
    *
    * @param userAddress Address of the user.
@@ -188,6 +204,7 @@ contract BRingFarming is BRingFarmingOwnable {
    *      - List of the stakes start timestamps.
    *      - List of the stakes unstake timestamps
    *        (stake's activity may be detected by this value (equal 0 - is active))
+   *      - List of the stakes block numbers.
    */
   function viewStakingDetails(address userAddress) external view
     returns (
@@ -195,30 +212,33 @@ contract BRingFarming is BRingFarmingOwnable {
       address[] memory,
       uint256[] memory,
       uint256[] memory,
+      uint256[] memory,
       uint256[] memory
     )
   {
-    uint256 userStakesNumber = stakes[userAddress].length;
+    uint256[] memory idxs = new uint256[](stakes[userAddress].length);
+    address[] memory stakedTokenAddresses = new address[](stakes[userAddress].length);
+    uint256[] memory amounts = new uint256[](stakes[userAddress].length);
+    uint256[] memory stakeTimes = new uint256[](stakes[userAddress].length);
+    uint256[] memory unstakeTimes = new uint256[](stakes[userAddress].length);
+    uint256[] memory stakeBlocks = new uint256[](stakes[userAddress].length);
 
-    uint256[] memory idxs = new uint256[](userStakesNumber);
-    address[] memory stakedTokenAddresses = new address[](userStakesNumber);
-    uint256[] memory amounts = new uint256[](userStakesNumber);
-    uint256[] memory stakeTimes = new uint256[](userStakesNumber);
-    uint256[] memory unstakeTimes = new uint256[](userStakesNumber);
-
-    for (uint8 i = 0; i < uint8(userStakesNumber); i++) {
-      StakeData memory _stake = stakes[userAddress][i];
-
-      idxs[i] = _stake.idx;
-      stakedTokenAddresses[i] = _stake.stakedTokenAddress;
-      amounts[i] = _stake.amount;
-      stakeTimes[i] = _stake.stakeTime;
-      unstakeTimes[i] = _stake.unstakeTime;
+    for (uint8 i = 0; i < uint8(stakes[userAddress].length); i++) {
+      idxs[i] = stakes[userAddress][i].idx;
+      stakedTokenAddresses[i] = stakes[userAddress][i].stakedTokenAddress;
+      amounts[i] = stakes[userAddress][i].amount;
+      stakeTimes[i] = stakes[userAddress][i].stakeTime;
+      unstakeTimes[i] = stakes[userAddress][i].unstakeTime;
+      stakeBlocks[i] = stakes[userAddress][i].stakeBlockNumber;
     }
 
     return (
-      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes
+      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes, stakeBlocks
     );
+  }
+
+  function isActiveUser(address userAddress) public view returns (bool) {
+    return (users[userAddress].registrationTime > 0);
   }
 
 }
