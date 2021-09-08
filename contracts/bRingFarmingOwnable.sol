@@ -14,7 +14,7 @@ struct Pool {
   uint256[] rewardRates;
 
   uint256[10] rewardsAccPerShare;
-  uint256 lastOperationBlock;
+  uint256 lastOperationTime;
   uint256 totalStaked;
 }
 
@@ -31,8 +31,6 @@ struct StakeData {
   uint256[10] stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
-  uint256 stakeBlockNumber;
-  //TODO: add unstake block number
 }
 
 abstract contract BRingFarmingOwnable is Ownable, Pausable {
@@ -141,7 +139,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * @param maxStakeAmount Maximum stake amount.
    * @param totalStakeLimit Total pool staked amount top limit.
    * @param farmingSequence List of farming tokens addresses.
-   * @param rewardRates List of rewards per block for every token from the farming sequence list.
+   * @param rewardRates List of rewards per second for every token from the farming sequence list.
    */
   function configPool(
     address stakedTokenAddress,
@@ -228,7 +226,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     IERC20(_stake.stakedTokenAddress).transfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
-    pool.lastOperationBlock = block.number;
+    pool.lastOperationTime = block.timestamp;
 
     emit Unstake(userAddress, stakeIdx, _stake.stakedTokenAddress, _stake.amount, block.timestamp);
   }
