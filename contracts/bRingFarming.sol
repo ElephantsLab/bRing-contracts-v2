@@ -24,6 +24,7 @@ contract BRingFarming is BRingFarmingOwnable {
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
 
     // Update user data
+    user.registrationTime = block.timestamp;
     if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender)) {
       user.referrer = referrer;
       users[referrer].referrals.push(msg.sender);
@@ -234,6 +235,10 @@ contract BRingFarming is BRingFarmingOwnable {
     return (
       idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes, stakeBlocks
     );
+  }
+
+  function isActiveUser(address userAddress) external view returns (bool) {
+    return (users[userAddress].registrationTime > 0);
   }
 
 }

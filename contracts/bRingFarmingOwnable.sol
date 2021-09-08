@@ -19,6 +19,7 @@ struct Pool {
 }
 
 struct User {
+  uint256 registrationTime;
   address referrer;
   address[] referrals;
 }
