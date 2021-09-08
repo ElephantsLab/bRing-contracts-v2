@@ -25,7 +25,7 @@ contract BRingFarming is BRingFarmingOwnable {
 
     // Update user data
     user.registrationTime = block.timestamp;
-    if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender)) {
+    if (user.referrer == address(0x0) && (referrer != address(0x0) && referrer != msg.sender && isActiveUser(referrer))) {
       user.referrer = referrer;
       users[referrer].referrals.push(msg.sender);
 
@@ -237,7 +237,7 @@ contract BRingFarming is BRingFarmingOwnable {
     );
   }
 
-  function isActiveUser(address userAddress) external view returns (bool) {
+  function isActiveUser(address userAddress) public view returns (bool) {
     return (users[userAddress].registrationTime > 0);
   }
 
