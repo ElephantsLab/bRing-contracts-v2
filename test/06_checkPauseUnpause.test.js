@@ -45,7 +45,7 @@ contract("check pause and unpause logic", async accounts => {
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [100, 200, 300];
+        let tokenRewards = [1, 2, 3];
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
@@ -103,7 +103,6 @@ contract("check pause and unpause logic", async accounts => {
         );
     })
 
-    // может ли насчитываться награда при остановленом конракте
     it("should revert claim reward if contract paused", async () => {
         await time.increase(time.duration.days(1));
 

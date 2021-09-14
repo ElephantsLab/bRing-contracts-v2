@@ -47,12 +47,17 @@ contract("check if user can not get reward twice for the same period", async acc
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [4, 5, 6];
+        let tokenRewards = [1, 2, 3];
+        const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+            [
+                (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[2])).mul(rewardsTokenbits)
+            ])
     })
 
     it("send tokens to the contract address", async () => {

@@ -50,7 +50,12 @@ contract("user should be able to do two stakes in a row one by one", async accou
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+            [
+                (new BN(tokenRewards[0])).mul(tokenbits), 
+                (new BN(tokenRewards[1])).mul(tokenbits), 
+                (new BN(tokenRewards[2])).mul(tokenbits)
+            ], 
+            { from: deployer } )
     })
 
     it("send tokens to the contract address", async () => {
