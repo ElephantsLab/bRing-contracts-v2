@@ -46,12 +46,10 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakeTime = block.timestamp;
 
     // Update pool data
-    if (pool.totalStaked > 0) {
-      for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-        pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
+      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
-        _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
-      }
+      _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
     }
 
     pool.totalStaked+= amount;
@@ -158,7 +156,7 @@ contract BRingFarming is BRingFarmingOwnable {
       actualTime = contractDeploymentTime + stakingDuration;
     }
 
-    if (actualTime <= pool.lastOperationTime) {
+    if (actualTime <= pool.lastOperationTime || pool.totalStaked == 0) {
       return pool.rewardsAccPerShare[farmingSequenceIdx];
     }
 
