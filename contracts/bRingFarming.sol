@@ -236,4 +236,12 @@ contract BRingFarming is BRingFarmingOwnable {
     return (users[userAddress].registrationTime > 0);
   }
 
+  function getReferrals(address userAddress) public view returns (address[] memory) {
+    return users[userAddress].referrals;
+  }
+
+  function getReferralsNumber(address userAddress) public view returns (uint256) {
+    return users[userAddress].referrals.length;
+  }
+
 }
