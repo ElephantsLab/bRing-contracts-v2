@@ -12,7 +12,7 @@ const {
 } = require('@openzeppelin/test-helpers');
 
 contract("user should be able claim reward without unstake", async accounts => {
-    const [ deployer, firstAddr, secondAddr, thirdAddr ] = accounts;
+    const [ deployer, firstAddr, secondAddr ] = accounts;
 
     let bRingFarming;
     let bRingFarmingAddress;
@@ -28,17 +28,17 @@ contract("user should be able claim reward without unstake", async accounts => {
 
     before(async () => {
         // tokens deployed
-        firstToken = await FirstToken.deployed({ from: deployer });
+        firstToken = await FirstToken.new({ from: deployer });
         firstTokenAddress = firstToken.address;
 
-        secondToken = await SecondToken.deployed({ from: deployer });
+        secondToken = await SecondToken.new({ from: deployer });
         secondTokenAddress = secondToken.address;
 
-        thirdToken = await ThirdToken.deployed({ from: deployer });
+        thirdToken = await ThirdToken.new({ from: deployer });
         thirdTokenAddress = thirdToken.address;
 
         // contract deployed
-        bRingFarming = await bRingFarmingContract.deployed({ from: deployer });
+        bRingFarming = await bRingFarmingContract.new({ from: deployer });
         bRingFarmingAddress = bRingFarming.address;
     })
 
@@ -70,16 +70,32 @@ contract("user should be able claim reward without unstake", async accounts => {
         }
     })
 
-    it("user address should have secondToken in his address", async () => {
+    it("users should have secondToken in their addresses", async () => {
+        let users = [ firstAddr, secondAddr ];
+        let userBalance;
+
         const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        await secondToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
-        let firstUserBalance = await secondToken.balanceOf.call(firstAddr);
-        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
+        for(let i = 0; i < users.length; i++) {
+            await secondToken.transfer(users[i], (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+            userBalance = await secondToken.balanceOf.call(users[i]);
+            assert.equal(userBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user tokens balance is wrong`);
+        }
     })
 
-    it("user makes stake", async () => {
+    it("second user makes stake ", async () => {
+        const decimals = await secondToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await secondToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+        await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+    
+        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        assert.equal(stakeDetails[0].length, 1, "second user stake amount is wrong");
+    })
+
+    it("first user makes stake", async () => {
         const decimals = await secondToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
@@ -87,7 +103,7 @@ contract("user should be able claim reward without unstake", async accounts => {
         await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
+        assert.equal(stakeDetails[0].length, 1, "first user stake amount is wrong");
     })
 
     it("user should be able view stake reward", async () => {
@@ -97,10 +113,15 @@ contract("user should be able claim reward without unstake", async accounts => {
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
+        
+        console.log("firstToken getStakeRewards * 94% = ", (Number(stakeRew[0]) * 0.94));
+        console.log("secondToken getStakeRewards * 94% = ", (Number(stakeRew[1]) * 0.94));
+        console.log("thirdToken getStakeRewards * 94% = ", (Number(stakeRew[2]) * 0.94));
 
         expect(Number(stakeRew[0])).to.be.above(0);
         expect(Number(stakeRew[1])).to.be.above(0);
         expect(Number(stakeRew[2])).to.be.above(0);
+
     })
 
     it("user should be able claim reward without unstake", async () => {
@@ -108,6 +129,10 @@ contract("user should be able claim reward without unstake", async accounts => {
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
+
+        console.log("claim firstToken", Number(await firstToken.balanceOf.call(firstAddr)));
+        console.log("claim secondToken", Number(await secondToken.balanceOf.call(firstAddr)));
+        console.log("claim thirdToken", Number(await thirdToken.balanceOf.call(firstAddr)));
 
         expect(Number(await secondToken.balanceOf.call(firstAddr))).to.be.above(0);
         expect(Number(await firstToken.balanceOf.call(firstAddr))).to.be.above(0);

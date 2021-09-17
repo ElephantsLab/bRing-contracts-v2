@@ -28,17 +28,17 @@ contract("check reward with different referral levels and without referrer", asy
 
     before(async () => {
         // tokens deployed
-        firstToken = await FirstToken.deployed({ from: deployer });
+        firstToken = await FirstToken.new({ from: deployer });
         firstTokenAddress = firstToken.address;
 
-        secondToken = await SecondToken.deployed({ from: deployer });
+        secondToken = await SecondToken.new({ from: deployer });
         secondTokenAddress = secondToken.address;
 
-        thirdToken = await ThirdToken.deployed({ from: deployer });
+        thirdToken = await ThirdToken.new({ from: deployer });
         thirdTokenAddress = thirdToken.address;
 
         // contract deployed
-        bRingFarming = await bRingFarmingContract.deployed({ from: deployer });
+        bRingFarming = await bRingFarmingContract.new({ from: deployer });
         bRingFarmingAddress = bRingFarming.address;
     })
 
