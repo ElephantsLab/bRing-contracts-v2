@@ -13,7 +13,7 @@ const {
 } = require('@openzeppelin/test-helpers');
 
 contract("check require statements of bRingFarmingOwnable", async accounts => {
-    const [ deployer, anotherWallet ] = accounts;
+    const [ deployer, firstAddr ] = accounts;
 
     let bRingFarming;
     let bRingFarmingAddress;
@@ -178,6 +178,208 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 ], { from: deployer } ),
                 'Invalid configuration data'
         );
+    })
+
+    it("should revert Invalid stake index data in func emergencyUnstake", async () => {
+        let minStakeAmount = 1;
+        let maxStakeAmount = 500000; // 500 000
+        let totalStakeLimit = 1000000; // 1 000 000
+        let tokenRewards = [1, 2, 3];
+        const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+        let stakeAmount = 1000;
+
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+            (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
+            [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
+            [
+                (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[2])).mul(rewardsTokenbits)
+            ]);
+
+        let tokenContractBalance;
+        let tokensNames = [firstToken, secondToken, thirdToken];
+
+        const firstTokenDecimals = await firstToken.decimals();
+        const secondTokenDecimals = await secondToken.decimals();
+        const thirdTokenDecimals = await thirdToken.decimals();
+        const tokensDecimals = [firstTokenDecimals, secondTokenDecimals, thirdTokenDecimals];
+
+        for(let i = 0; i < tokensNames.length; i++){
+            let tokenbits = (new BN(10)).pow(tokensDecimals[i]);
+            await tokensNames[i].transfer(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: deployer });
+            tokenContractBalance = await tokensNames[i].balanceOf.call(bRingFarmingAddress);
+            assert.equal(tokenContractBalance.valueOf(), Number((new BN(maxStakeAmount)).mul(tokenbits)), `contract ${tokensNames[i]} balance is wrong`);
+        }
+
+        await firstToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+        let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
+        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        const userInfo = await bRingFarming.users(firstAddr, { from: deployer });
+        let payReferralRewards;
+
+        if(userInfo.referrer == constants.ZERO_ADDRESS) {
+            payReferralRewards = false;
+        } else {
+            payReferralRewards = true;
+        }
+
+        await expectRevert(
+            bRingFarming.emergencyUnstake(firstAddr, (stakeId + 1), 
+            [
+                (new BN(1)).mul(tokenbits), 
+                (new BN(1)).mul(tokenbits), 
+                (new BN(1)).mul(tokenbits)
+            ], 
+            payReferralRewards, { from: deployer }),
+            'Invalid stake index'
+        )
+    })
+
+    it("should revert Stake was unstaked already in func emergencyUnstake", async () => {
+        let minStakeAmount = 1;
+        let maxStakeAmount = 500000; // 500 000
+        let totalStakeLimit = 1000000; // 1 000 000
+        let tokenRewards = [1, 2, 3];
+        const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+        let stakeAmount = 1000;
+
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+            (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
+            [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
+            [
+                (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[2])).mul(rewardsTokenbits)
+            ]);
+
+        let tokenContractBalance;
+        let tokensNames = [firstToken, secondToken, thirdToken];
+
+        const firstTokenDecimals = await firstToken.decimals();
+        const secondTokenDecimals = await secondToken.decimals();
+        const thirdTokenDecimals = await thirdToken.decimals();
+        const tokensDecimals = [firstTokenDecimals, secondTokenDecimals, thirdTokenDecimals];
+
+        for(let i = 0; i < tokensNames.length; i++){
+            let tokenbits = (new BN(10)).pow(tokensDecimals[i]);
+            await tokensNames[i].transfer(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: deployer });
+            tokenContractBalance = await tokensNames[i].balanceOf.call(bRingFarmingAddress);
+            assert.equal(tokenContractBalance.valueOf(), Number((new BN(maxStakeAmount)).mul(tokenbits)), `contract ${tokensNames[i]} balance is wrong`);
+        }
+
+        await firstToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+        let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
+        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        await bRingFarming.unstake(stakeId, { from: firstAddr });
+
+        const userInfo = await bRingFarming.users(firstAddr, { from: deployer });
+        let payReferralRewards;
+
+        if(userInfo.referrer == constants.ZERO_ADDRESS) {
+            payReferralRewards = false;
+        } else {
+            payReferralRewards = true;
+        }
+
+        await expectRevert(
+            bRingFarming.emergencyUnstake(firstAddr, stakeId, 
+            [
+                (new BN(1)).mul(tokenbits), 
+                (new BN(1)).mul(tokenbits), 
+                (new BN(1)).mul(tokenbits)
+            ], 
+            payReferralRewards, { from: deployer }),
+            'Stake was unstaked already'
+        )
+    })
+
+    it("should revert Incorrect rewards array length in func emergencyUnstake", async () => {
+        let minStakeAmount = 1;
+        let maxStakeAmount = 500000; // 500 000
+        let totalStakeLimit = 1000000; // 1 000 000
+        let tokenRewards = [1, 2, 3];
+        const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+        let stakeAmount = 1000;
+
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+            (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
+            [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
+            [
+                (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[2])).mul(rewardsTokenbits)
+            ]);
+
+        let tokenContractBalance;
+        let tokensNames = [firstToken, secondToken, thirdToken];
+
+        const firstTokenDecimals = await firstToken.decimals();
+        const secondTokenDecimals = await secondToken.decimals();
+        const thirdTokenDecimals = await thirdToken.decimals();
+        const tokensDecimals = [firstTokenDecimals, secondTokenDecimals, thirdTokenDecimals];
+
+        for(let i = 0; i < tokensNames.length; i++){
+            let tokenbits = (new BN(10)).pow(tokensDecimals[i]);
+            await tokensNames[i].transfer(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: deployer });
+            tokenContractBalance = await tokensNames[i].balanceOf.call(bRingFarmingAddress);
+            assert.equal(tokenContractBalance.valueOf(), Number((new BN(maxStakeAmount)).mul(tokenbits)), `contract ${tokensNames[i]} balance is wrong`);
+        }
+
+        await firstToken.transfer(firstAddr, (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+        let firstUserBalance = await firstToken.balanceOf.call(firstAddr);
+        assert.equal(firstUserBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), "user tokens balance is wrong");
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        const userInfo = await bRingFarming.users(firstAddr, { from: deployer });
+        let payReferralRewards;
+
+        if(userInfo.referrer == constants.ZERO_ADDRESS) {
+            payReferralRewards = false;
+        } else {
+            payReferralRewards = true;
+        }
+
+        await expectRevert(
+            bRingFarming.emergencyUnstake(firstAddr, stakeId, 
+            [
+                (new BN(1)).mul(tokenbits), 
+                (new BN(1)).mul(tokenbits)
+            ], 
+            payReferralRewards, { from: deployer }),
+            'Incorrect rewards array length'
+        )
     })
 
     it("should revert invalid amount in func retrieveTokens", async () => {

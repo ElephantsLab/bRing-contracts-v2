@@ -22,7 +22,8 @@
   },
   "homepage": "https://github.com/ElephantsLab/bRing-contracts-v2#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.1"
+    "@openzeppelin/contracts": "^4.3.1",
+    "truffle": "^5.4.10"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.13",

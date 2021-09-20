@@ -172,7 +172,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         );       
     })
 
-    it("owner should be able to call func emergencyUnstake", async () => {
+    it("owner should be able to call func emergencyUnstake for stake without refferer", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -230,7 +230,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         await bRingFarming.emergencyUnstake(firstAddr, stakeId, 
             [
                 (new BN(1)).mul(tokenbits), 
-                (new BN(1)).mul(tokenbits), 
+                (new BN(0)).mul(tokenbits), 
                 (new BN(1)).mul(tokenbits)
             ], 
             payReferralRewards, { from: deployer });
@@ -240,8 +240,89 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         let userThirdTokenBalance = await thirdToken.balanceOf.call(firstAddr);
         assert.equal(userFirstTokenBalance, Number((new BN(1)).mul(tokenbits)) + Number((new BN(stakeAmount)).mul(tokenbits)), 
             "user firstToken balance is wrong");
-        assert.equal(userSecondTokenBalance, Number((new BN(1)).mul(tokenbits)), "user secondToken balance is wrong");
+        assert.equal(userSecondTokenBalance, Number((new BN(0)).mul(tokenbits)), "user secondToken balance is wrong");
         assert.equal(userThirdTokenBalance, Number((new BN(1)).mul(tokenbits)), "user thirdToken balance is wrong");  
+    })
+
+    it("owner should be able to call func emergencyUnstake for stake with refferer", async () => {
+        let minStakeAmount = 1;
+        let maxStakeAmount = 500000; // 500 000
+        let totalStakeLimit = 1000000; // 1 000 000
+        let tokenRewards = [1, 2, 3];
+        const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+        let stakeAmount = 1000;
+
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
+            (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
+            [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
+            [
+                (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
+                (new BN(tokenRewards[2])).mul(rewardsTokenbits)
+            ]);
+
+        let tokenContractBalance;
+        let tokensNames = [firstToken, secondToken, thirdToken];
+
+        const firstTokenDecimals = await firstToken.decimals();
+        const secondTokenDecimals = await secondToken.decimals();
+        const thirdTokenDecimals = await thirdToken.decimals();
+        const tokensDecimals = [firstTokenDecimals, secondTokenDecimals, thirdTokenDecimals];
+
+        for(let i = 0; i < tokensNames.length; i++){
+            let tokenbits = (new BN(10)).pow(tokensDecimals[i]);
+            await tokensNames[i].transfer(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: deployer });
+            tokenContractBalance = await tokensNames[i].balanceOf.call(bRingFarmingAddress);
+            assert.equal(tokenContractBalance.valueOf(), Number((new BN(maxStakeAmount)).mul(tokenbits)), `contract ${tokensNames[i]} balance is wrong`);
+        }
+
+        let users = [anotherWallet, firstAddr];
+        let userBalance;
+
+        for(let i = 0; i < users.length; i++) {
+            await firstToken.transfer(users[i], (new BN(stakeAmount)).mul(tokenbits), { from: deployer });
+            userBalance = await firstToken.balanceOf.call(users[i]);
+            assert.equal(userBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user tokens balance is wrong`);
+        }
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: anotherWallet });
+        await bRingFarming.stake(anotherWallet, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: anotherWallet });
+
+        await time.increase(time.duration.hours(1));
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(anotherWallet, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
+
+        const userInfo = await bRingFarming.users(firstAddr, { from: deployer });
+        let payReferralRewards;
+
+        if(userInfo.referrer == constants.ZERO_ADDRESS) {
+            payReferralRewards = false;
+        } else {
+            payReferralRewards = true;
+        }
+
+        await bRingFarming.emergencyUnstake(firstAddr, stakeId, 
+            [
+                (new BN(10)).mul(tokenbits), 
+                (new BN(10)).mul(tokenbits), 
+                (new BN(10)).mul(tokenbits)
+            ], 
+            payReferralRewards, { from: deployer });
+
+        let userFirstTokenBalance = await firstToken.balanceOf.call(firstAddr);
+        let userSecondTokenBalance = await secondToken.balanceOf.call(firstAddr);
+        let userThirdTokenBalance = await thirdToken.balanceOf.call(firstAddr);
+        assert.equal(userFirstTokenBalance, Number((new BN(10)).mul(tokenbits)) + Number((new BN(stakeAmount)).mul(tokenbits)), 
+            "user firstToken balance is wrong");
+        assert.equal(userSecondTokenBalance, Number((new BN(10)).mul(tokenbits)), "user secondToken balance is wrong");
+        assert.equal(userThirdTokenBalance, Number((new BN(10)).mul(tokenbits)), "user thirdToken balance is wrong");  
     })
 
     it("should revert for NOT owner caller func retrieveTokens", async () => {

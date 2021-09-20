@@ -110,6 +110,24 @@ contract("check expected reward", async accounts => {
         await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(oneHundred)).mul(tokenbits), { from: firstAddr });
     })
 
+    // it("firstAddr user makes UNSTAKE", async () => {
+    //     await time.increase(time.duration.minutes(10));
+
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][0];
+
+    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
+    // })
+
+    // it("firstAddr user makes 2nd UNSTAKE", async () => {
+    //     await time.increase(time.duration.minutes(1));
+
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][1];
+
+    //     await bRingFarming.unstake(stakeId, { from: firstAddr });
+    // })
+
     it("users make STAKE with referrer", async () => {
         await time.increase(time.duration.minutes(30));
         const decimals = await firstToken.decimals();
@@ -132,7 +150,7 @@ contract("check expected reward", async accounts => {
         await bRingFarming.unstake(stakeId, { from: thirdAddr });
     })
 
-    // it("firstAddr user make UNSTAKE", async () => {
+    // it("firstAddr user makes UNSTAKE", async () => {
     //     await time.increase(time.duration.minutes(10));
 
     //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
