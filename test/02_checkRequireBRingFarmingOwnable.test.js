@@ -37,7 +37,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         bRingFarmingAddress = bRingFarming.address;
     })
 
-    it("should revert invalid stakingDuration param in func changeStakingDuration", async () => {
+    it("should revert invalid 'stakingDuration' param in func 'changeStakingDuration'", async () => {
         const invalidStakingDuration = new BN(0);
 
         await expectRevert(
@@ -46,7 +46,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid stakeMultiplier param in func changeStakeMultiplier", async () => {
+    it("should revert invalid 'stakeMultiplier' param in func 'changeStakeMultiplier'", async () => {
         const invalidStakingDuration = new BN(0);
 
         await expectRevert(
@@ -55,7 +55,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid referralPercents param in func changeReferralPercents", async () => {
+    it("should revert invalid 'referralPercents' param in func 'changeReferralPercents'", async () => {
         const invalidReferralPercents = [];
 
         await expectRevert(
@@ -64,7 +64,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid stakedTokenAddress param in func configPool", async () => {
+    it("should revert invalid 'stakedTokenAddress' param in func 'configPool'", async () => {
         const invalidStakedTokenAddress = constants.ZERO_ADDRESS;
 
         let minStakeAmount = 1;
@@ -88,7 +88,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid minStakeAmount & maxStakeAmount params in func configPool", async () => {
+    it("should revert invalid 'minStakeAmount' & 'maxStakeAmount' params in func 'configPool'", async () => {
         let lowMinStakeAmount = 0;
         let greaterMinStakeAmount = 500000; // 500 000
         let wrongMaxStakeAmount = 500;
@@ -136,7 +136,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid totalStakeLimit param in func configPool", async () => {
+    it("should revert invalid 'totalStakeLimit' param in func 'configPool'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 500000; // 500000
@@ -158,7 +158,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid configuration data in func configPool", async () => {
+    it("should revert 'Invalid configuration data' in func 'configPool'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -180,7 +180,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert Invalid stake index data in func emergencyUnstake", async () => {
+    it("should revert 'Invalid stake index data' in func 'emergencyUnstake'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -247,7 +247,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         )
     })
 
-    it("should revert Stake was unstaked already in func emergencyUnstake", async () => {
+    it("should revert 'Stake was unstaked already' in func 'emergencyUnstake'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -316,7 +316,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         )
     })
 
-    it("should revert Incorrect rewards array length in func emergencyUnstake", async () => {
+    it("should revert 'Incorrect rewards array length' in func 'emergencyUnstake'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -382,7 +382,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         )
     })
 
-    it("should revert invalid amount in func retrieveTokens", async () => {
+    it("should revert 'Invalid amount' in func 'retrieveTokens'", async () => {
         let amount = 0;
 
         await expectRevert(
@@ -391,7 +391,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         )
     })
 
-    it("should revert insufficient balance in func retrieveTokens", async () => {
+    it("should revert 'Insufficient balance' in func 'retrieveTokens'", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 

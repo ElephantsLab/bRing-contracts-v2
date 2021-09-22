@@ -37,7 +37,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         bRingFarmingAddress = bRingFarming.address;
     })
 
-    it("should revert for NOT owner caller func changeStakingDuration", async () => {
+    it("should revert for NOT owner caller func 'changeStakingDuration'", async () => {
         const newStakingDuration = new BN(10);
 
         await expectRevert(
@@ -73,7 +73,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         assert.equal(stakeMultiplier, newStakeMultiplier, "stake multiplier is wrong");
     })
 
-    it("should revert for NOT owner caller func changeReferralPercents", async () => {
+    it("should revert for NOT owner caller func 'changeReferralPercents'", async () => {
         const newRefPercents = [5, 4, 3, 2];
 
         await expectRevert(
@@ -82,7 +82,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("owner should be able change referralPercents", async () => {
+    it("owner should be able change 'referralPercents'", async () => {
         const newRefPercents = [ 5, 4, 3, 2 ];
         await bRingFarming.changeReferralPercents(newRefPercents, { from: deployer });
 
@@ -94,7 +94,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         expect(referralPercents).to.deep.equal(newRefPercents);
     })
 
-    it("should revert for NOT owner caller func configPool", async () => {
+    it("should revert for NOT owner caller func 'configPool'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -116,7 +116,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert for NOT owner caller func emergencyUnstake", async () => {
+    it("should revert for NOT owner caller func 'emergencyUnstake'", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -172,7 +172,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         );       
     })
 
-    it("owner should be able to call func emergencyUnstake for stake without refferer", async () => {
+    it("owner should be able to call func 'emergencyUnstake' for stake without refferer", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -244,7 +244,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         assert.equal(userThirdTokenBalance, Number((new BN(1)).mul(tokenbits)), "user thirdToken balance is wrong");  
     })
 
-    it("owner should be able to call func emergencyUnstake for stake with refferer", async () => {
+    it("owner should be able to call func 'emergencyUnstake' for stake with refferer", async () => {
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -325,7 +325,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         assert.equal(userThirdTokenBalance, Number((new BN(10)).mul(tokenbits)), "user thirdToken balance is wrong");  
     })
 
-    it("should revert for NOT owner caller func retrieveTokens", async () => {
+    it("should revert for NOT owner caller func 'retrieveTokens'", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
@@ -342,7 +342,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("owner should be able to call func retrieveTokens", async () => {
+    it("owner should be able to call func 'retrieveTokens'", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
