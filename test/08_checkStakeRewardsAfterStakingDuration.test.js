@@ -6,8 +6,6 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
-    expectEvent,  // Assertions for emitted events
-    expectRevert, // Assertions for transactions that should fail
     time
 } = require('@openzeppelin/test-helpers');
 
@@ -136,13 +134,6 @@ contract("check if reward not bigger after stakingDuration", async accounts => {
         expect(firstTokenBalance90d).to.be.above(0);
         expect(secondTokenBalance90d).to.be.above(0);       
         expect(thirdTokenBalance90d).to.be.above(0);
-
-        // console.log("-------- unstake -----------");
-        // await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        // console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
     })
 
     it("user should NOT get reward twice", async () => {
@@ -183,16 +174,6 @@ contract("check if reward not bigger after stakingDuration", async accounts => {
         console.log(secondTokenBalance91d);
         console.log(thirdTokenBalance91d);
 
-        // console.log("-------- unstake -----------");
-        // await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        // console.log(Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })));
-        // console.log(Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })));
-
-        // assert.equal(firstTokenBalance90d, firstTokenBalance91d, "firstToken balance after 91 days is wrong");
-        // assert.equal(secondTokenBalance90d, secondTokenBalance91d, "secondToken balance after 91 days is wrong");
-        // assert.equal(thirdTokenBalance90d, thirdTokenBalance91d, "thirdToken balance after 91 days is wrong");
     })
 
 })

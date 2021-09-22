@@ -6,7 +6,6 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
-    expectEvent,  // Assertions for emitted events
     expectRevert, // Assertions for transactions that should fail
     time
 } = require('@openzeppelin/test-helpers');
@@ -117,11 +116,7 @@ contract("check pause and unpause logic", async accounts => {
         await expectRevert(
             bRingFarming.claimReward(stakeId, { from: firstAddr }),
             'Pausable: paused'
-        ); 
-        // await bRingFarming.claimReward(stakeId, { from: firstAddr });
-        // console.log(await secondToken.balanceOf.call(firstAddr));
-        // console.log(await firstToken.balanceOf.call(firstAddr));
-        // console.log(await thirdToken.balanceOf.call(firstAddr));
+        );
     })
 
     it("should revert unstake if contract paused", async () => {
@@ -152,8 +147,6 @@ contract("check pause and unpause logic", async accounts => {
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
-
-        // check sum
     })
 
     it("user should be able unstake tokens", async () => {
@@ -161,7 +154,5 @@ contract("check pause and unpause logic", async accounts => {
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: firstAddr });
-
-        // check sum
     })
 })

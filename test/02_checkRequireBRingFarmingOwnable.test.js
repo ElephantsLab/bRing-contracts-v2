@@ -7,9 +7,7 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 const {
     BN,           // Big Number support
     constants,    // Common constants, like the zero address and largest integers
-    expectEvent,  // Assertions for emitted events
-    expectRevert, // Assertions for transactions that should fail
-    time
+    expectRevert // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
 
 contract("check require statements of bRingFarmingOwnable", async accounts => {
@@ -407,18 +405,4 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
             'Insufficient Balance'
         )
     })
-
-    // it("should revert transfer failed in func retrieveTokens", async () => {
-    //     const decimals = await firstToken.decimals();
-    //     const tokenbits = (new BN(10)).pow(decimals);
-
-    //     let transferAmount = 100000;
-    //     let retrieveAmount = 500000;             
-
-    //     await firstToken.transfer(bRingFarmingAddress, (new BN(transferAmount)).mul(tokenbits), { from: deployer });
-    //     let contractBalance = await firstToken.balanceOf.call(bRingFarmingAddress);
-    //     assert.equal(contractBalance.valueOf(), Number((new BN(transferAmount)).mul(tokenbits)), "contract tokens balance is wrong");
-
-    //     await bRingFarming.retrieveTokens(secondTokenAddress, (new BN(retrieveAmount)).mul(tokenbits), { from: deployer });
-    // })
 })

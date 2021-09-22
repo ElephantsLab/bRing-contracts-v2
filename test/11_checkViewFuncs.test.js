@@ -6,13 +6,11 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
-    expectEvent,  // Assertions for emitted events
-    expectRevert, // Assertions for transactions that should fail
     time
 } = require('@openzeppelin/test-helpers');
 
-contract("check claim by period vs unstake once at the end", async accounts => {
-    const [ deployer, firstAddr, secondAddr ] = accounts;
+contract("user should be able to do two stakes in a row one by one", async accounts => {
+    const [ deployer, firstAddr, secondAddr, thirdAddr, fourthAddr ] = accounts;
 
     let bRingFarming;
     let bRingFarmingAddress;
@@ -24,7 +22,7 @@ contract("check claim by period vs unstake once at the end", async accounts => {
     let maxStakeAmount = 500000; // 500 000
     let totalStakeLimit = 1000000; // 1 000 000
 
-    let stakeAmount = 10000;
+    let stakeAmount = 1000;
 
     before(async () => {
         // tokens deployed
@@ -45,7 +43,7 @@ contract("check claim by period vs unstake once at the end", async accounts => {
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [1, 1, 1];
+        let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
@@ -76,7 +74,7 @@ contract("check claim by period vs unstake once at the end", async accounts => {
     })
 
     it("users should have firstToken in their addresses", async () => {
-        let users = [firstAddr, secondAddr];
+        let users = [firstAddr, secondAddr, thirdAddr, fourthAddr];
         let userBalance;
 
         const decimals = await firstToken.decimals();
@@ -89,16 +87,35 @@ contract("check claim by period vs unstake once at the end", async accounts => {
         }
     })
 
-    it("users make stake without referrer", async () => {
-        let users = [ firstAddr, secondAddr ];
+    it("isActiveUser func should return false for not staked user", async () => {
+        let receivedIsActiveUser = await bRingFarming.isActiveUser(firstAddr, { from: firstAddr });
+
+        assert.equal(receivedIsActiveUser, false, "isActiveUser func show wrong data");
+    })
+
+    it("user makes stake without referrer", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
+        await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+
+        assert.equal(stakeDetails[0].length, 1, "firstAddr user number of stake is wrong");
+        assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), "firstAddr user stake amount is wrong");
+    })
+
+    it("users make stake with referrer", async () => {
+        let users = [firstAddr, secondAddr, thirdAddr, fourthAddr];
         let stakeDetails;
 
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        for(let i = 0; i < users.length; i++){
+        for(let i = 1; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
 
@@ -107,36 +124,32 @@ contract("check claim by period vs unstake once at the end", async accounts => {
         }
     })
 
-    it("firstAddr user make claim by time periods", async () => {
-        let timePeriods = [1, 3, 5, 7, 9, 2, 4, 6, 8];
+    it("firstAddr user make UNSTAKE", async () => {
+        await time.increase(time.duration.minutes(10));
 
-        for(let i = 0; i < timePeriods.length; i++) {
-            await time.increase(time.duration.days(timePeriods[i]));
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeId = stakeDetails[0][0];
 
-            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-            let stakeId = stakeDetails[0][0];
-
-            await bRingFarming.claimReward(stakeId, { from: firstAddr });
-        }
+        await bRingFarming.unstake(stakeId, { from: firstAddr });
     })
 
-    it("users make unstake after 90 days", async () => {
-        let users = [firstAddr, secondAddr];
-        let userBalance;
+    it("isActiveUser func should return true for staked user", async () => {
+        let receivedIsActiveUser = await bRingFarming.isActiveUser(firstAddr, { from: firstAddr });
 
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+        assert.equal(receivedIsActiveUser, true, "isActiveUser func show wrong data");
+    })
 
-        await time.increase(time.duration.days(90));
+    it("check if getReferrals func shows correct data", async () => {
+        let receivedFirstUserRefs = await bRingFarming.getReferrals(firstAddr, { from: firstAddr });
+        let firstUserRefs = [secondAddr, thirdAddr, fourthAddr];
 
-        for(let i = 0; i < users.length; i++) {
-            let stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
-            let stakeId = stakeDetails[0][0];
+        expect(receivedFirstUserRefs).to.deep.equal(firstUserRefs);
+    })
 
-            await bRingFarming.unstake(stakeId, { from: users[i] });
-
-            userBalance = Number(await firstToken.balanceOf.call(users[i]));
-            console.log(userBalance / tokenbits);
-        }
+    it("check if getReferralsNumber func shows correct data", async () => {
+        let receivedFirstUserRefs = await bRingFarming.getReferralsNumber(firstAddr, { from: firstAddr });
+        let firstUserRefs = [secondAddr, thirdAddr, fourthAddr];
+       
+        expect(Number(receivedFirstUserRefs)).to.equal(firstUserRefs.length);
     })
 })
