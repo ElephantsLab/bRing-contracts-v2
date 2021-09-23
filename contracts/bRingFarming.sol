@@ -60,7 +60,7 @@ contract BRingFarming is BRingFarmingOwnable {
     emit Stake(msg.sender, _stake.idx, stakedTokenAddress, amount, block.timestamp);
   }
 
-  function _unstake(address userAddress, uint256 stakeIdx) private whenNotPaused {
+  function _unstake(address userAddress, uint256 stakeIdx) private {
     require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
 
     StakeData storage _stake = stakes[userAddress][stakeIdx];
