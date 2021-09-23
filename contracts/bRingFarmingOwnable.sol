@@ -137,7 +137,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * @param stakedTokenAddress Address of the staked token contract.
    * @param minStakeAmount Minimum stake amount.
    * @param maxStakeAmount Maximum stake amount.
-   * @param totalStakeLimit Total pool staked amount top limit.
+   * @param totalStakeLimit Total pool staked amount top limit. If equal zero - no limit.
    * @param farmingSequence List of farming tokens addresses.
    * @param rewardRates List of rewards per second for every token from the farming sequence list.
    */
@@ -151,7 +151,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
   ) external onlyOwner {
     require(stakedTokenAddress != address(0x0), "Invalid token contract address");
     require(minStakeAmount > 0 && minStakeAmount < maxStakeAmount, "Invalid min or max stake amounts values");
-    require(maxStakeAmount < totalStakeLimit, "Invalid total stake limit value");
+    require(maxStakeAmount < totalStakeLimit || totalStakeLimit == 0, "Invalid total stake limit value");
     require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
 
     pools[stakedTokenAddress].minStakeAmount = minStakeAmount;

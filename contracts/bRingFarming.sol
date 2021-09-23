@@ -18,7 +18,7 @@ contract BRingFarming is BRingFarmingOwnable {
     Pool storage pool = pools[stakedTokenAddress];
 
     require(amount >= pool.minStakeAmount && amount <= pool.maxStakeAmount, "Invalid stake amount value");
-    require(pool.totalStaked + amount <= pool.totalStakeLimit, "This pool is fulfilled");
+    require(pool.totalStakeLimit == 0 || (pool.totalStaked + amount <= pool.totalStakeLimit), "This pool is fulfilled");
 
     // Validate pool object
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
