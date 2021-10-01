@@ -131,16 +131,28 @@ contract BRingFarming is BRingFarmingOwnable {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 94 / 100);
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 94 / 100, block.timestamp);
 
+        address refTokenAddress = pool.farmingSequence[i];
+        if (pool.referralRewardTokenAddress != address(0x0)) {
+          refTokenAddress = pool.referralRewardTokenAddress;
+        }
+
         address ref = users[userAddress].referrer;
         for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
-          IERC20(pool.farmingSequence[i]).transfer(ref, reward * referralPercents[j] / 100);
+          uint256 refReward;
+          if (pool.referralRewardTokenAddress == address(0x0)) {
+            refReward = reward * referralPercents[j] / 100;
+          } else {
+            refReward = reward * referralPercents[j] * pool.referralMultiplier / 10**REFERRAL_MULTIPLIER_DECIMALS / 100;
+          }
+
+          IERC20(refTokenAddress).transfer(ref, refReward);
           emit ReferralPayout(
             ref,
             userAddress,
             users[ref].referrer,
-            pool.farmingSequence[i],
+            refTokenAddress,
             referralPercents[j],
-            reward * referralPercents[j] / 100,
+            refReward,
             block.timestamp
           );
 
