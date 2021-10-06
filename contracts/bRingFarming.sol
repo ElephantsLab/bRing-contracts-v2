@@ -18,7 +18,7 @@ contract BRingFarming is BRingFarmingOwnable {
     Pool storage pool = pools[stakedTokenAddress];
 
     require(amount >= pool.minStakeAmount && amount <= pool.maxStakeAmount, "Invalid stake amount value");
-    require(pool.totalStaked + amount <= pool.totalStakeLimit, "This pool is fulfilled");
+    require(pool.totalStakeLimit == 0 || (pool.totalStaked + amount <= pool.totalStakeLimit), "This pool is fulfilled");
 
     // Validate pool object
     require(pool.farmingSequence.length > 0, "Pool doesn't exist");
@@ -44,6 +44,7 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakedTokenAddress = stakedTokenAddress;
     _stake.amount = amount;
     _stake.stakeTime = block.timestamp;
+    _stake.multiplier = 1;
 
     // Update pool data
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
@@ -60,7 +61,7 @@ contract BRingFarming is BRingFarmingOwnable {
     emit Stake(msg.sender, _stake.idx, stakedTokenAddress, amount, block.timestamp);
   }
 
-  function _unstake(address userAddress, uint256 stakeIdx) private whenNotPaused {
+  function _unstake(address userAddress, uint256 stakeIdx) private {
     require(stakeIdx < stakes[userAddress].length, "Invalid stake index");
 
     StakeData storage _stake = stakes[userAddress][stakeIdx];
@@ -109,17 +110,20 @@ contract BRingFarming is BRingFarmingOwnable {
     _unstake(userAddress, stakeIdx);
   }
 
-  function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccs) private {
+  function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccsAndMul) private {
+    uint256 multiplier = getStakeMultiplier(_stake);
+
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
-      uint256 reward = getStakeMultiplier(_stake)
+      uint256 reward = (_stake.multiplier + multiplier)
         * _stake.amount
         * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
         / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION;
+        / STAKE_MULTIPLIER_PRECISION
+        / 2;
 
-      if (updateStakeAccs) {
+      if (updateStakeAccsAndMul) {
         _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
       }
 
@@ -131,22 +135,38 @@ contract BRingFarming is BRingFarmingOwnable {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 94 / 100);
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 94 / 100, block.timestamp);
 
+        address refTokenAddress = pool.farmingSequence[i];
+        if (pool.referralRewardTokenAddress != address(0x0)) {
+          refTokenAddress = pool.referralRewardTokenAddress;
+        }
+
         address ref = users[userAddress].referrer;
         for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
-          IERC20(pool.farmingSequence[i]).transfer(ref, reward * referralPercents[j] / 100);
+          uint256 refReward;
+          if (pool.referralRewardTokenAddress == address(0x0)) {
+            refReward = reward * referralPercents[j] / 100;
+          } else {
+            refReward = reward * referralPercents[j] * pool.referralMultiplier / 10**REFERRAL_MULTIPLIER_DECIMALS / 100;
+          }
+
+          IERC20(refTokenAddress).transfer(ref, refReward);
           emit ReferralPayout(
             ref,
             userAddress,
             users[ref].referrer,
-            pool.farmingSequence[i],
+            refTokenAddress,
             referralPercents[j],
-            reward * referralPercents[j] / 100,
+            refReward,
             block.timestamp
           );
 
           ref = users[ref].referrer;
         }
       }
+    }
+
+    if (updateStakeAccsAndMul) {
+      _stake.multiplier = multiplier;
     }
   }
 
@@ -172,12 +192,15 @@ contract BRingFarming is BRingFarmingOwnable {
       return rewards;
     }
 
+    uint256 multiplier = getStakeMultiplier(_stake);
+
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      rewards[i] = getStakeMultiplier(_stake)
+      rewards[i] = (_stake.multiplier + multiplier)
         * (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
         * _stake.amount
         / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION;
+        / STAKE_MULTIPLIER_PRECISION
+        / 2;
     }
   }
 

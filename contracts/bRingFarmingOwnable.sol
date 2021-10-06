@@ -16,6 +16,9 @@ struct Pool {
   uint256[10] rewardsAccPerShare;
   uint256 lastOperationTime;
   uint256 totalStaked;
+
+  address referralRewardTokenAddress;
+  uint256 referralMultiplier;
 }
 
 struct User {
@@ -29,6 +32,7 @@ struct StakeData {
   address stakedTokenAddress;
   uint256 amount;
   uint256[10] stakeAcc;
+  uint256 multiplier;
   uint256 stakeTime;
   uint256 unstakeTime;
 }
@@ -96,6 +100,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
 
   uint256[] public referralPercents = [3, 2, 1]; // 3%, 2%, 1%
   uint256 public totalReferralPercent;
+  uint256 public constant REFERRAL_MULTIPLIER_DECIMALS = 10;
 
   constructor() {
     stakingDuration = 90 * 24 * 3600; // 90 days
@@ -137,9 +142,11 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * @param stakedTokenAddress Address of the staked token contract.
    * @param minStakeAmount Minimum stake amount.
    * @param maxStakeAmount Maximum stake amount.
-   * @param totalStakeLimit Total pool staked amount top limit.
+   * @param totalStakeLimit Total pool staked amount top limit. If equal zero - no limit.
    * @param farmingSequence List of farming tokens addresses.
    * @param rewardRates List of rewards per second for every token from the farming sequence list.
+   * @param referralRewardTokenAddress If zero address then standard logic, otherwise - reward will be awarded in specified tokens.
+   * @param referralMultiplier Referral tokens multiplier.
    */
   function configPool(
     address stakedTokenAddress,
@@ -147,11 +154,13 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     uint256 maxStakeAmount,
     uint256 totalStakeLimit,
     address[] memory farmingSequence,
-    uint256[] memory rewardRates
+    uint256[] memory rewardRates,
+    address referralRewardTokenAddress,
+    uint256 referralMultiplier
   ) external onlyOwner {
     require(stakedTokenAddress != address(0x0), "Invalid token contract address");
     require(minStakeAmount > 0 && minStakeAmount < maxStakeAmount, "Invalid min or max stake amounts values");
-    require(maxStakeAmount < totalStakeLimit, "Invalid total stake limit value");
+    require(maxStakeAmount < totalStakeLimit || totalStakeLimit == 0, "Invalid total stake limit value");
     require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
 
     pools[stakedTokenAddress].minStakeAmount = minStakeAmount;
@@ -164,6 +173,9 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
 
     pools[stakedTokenAddress].farmingSequence = farmingSequence;
     pools[stakedTokenAddress].rewardRates = rewardRates;
+
+    pools[stakedTokenAddress].referralRewardTokenAddress = referralRewardTokenAddress;
+    pools[stakedTokenAddress].referralMultiplier = referralMultiplier;
   }
 
   /**
@@ -205,16 +217,29 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
       if (!payReferralRewards) {
         continue;
       }
+
+      address refTokenAddress = pool.farmingSequence[i];
+      if (pool.referralRewardTokenAddress != address(0x0)) {
+        refTokenAddress = pool.referralRewardTokenAddress;
+      }
+
       address ref = users[userAddress].referrer;
       for (uint8 j = 0; j < referralPercents.length && ref != address(0x0); j++) {
-        IERC20(pool.farmingSequence[i]).transfer(ref, rewards[i] * referralPercents[j] / 100);
+        uint256 refReward;
+        if (pool.referralRewardTokenAddress == address(0x0)) {
+          refReward = rewards[i] * referralPercents[j] / 100;
+        } else {
+          refReward = rewards[i] * referralPercents[j] * pool.referralMultiplier / 10**REFERRAL_MULTIPLIER_DECIMALS / 100;
+        }
+
+        IERC20(refTokenAddress).transfer(ref, refReward);
         emit ReferralPayout(
           ref,
           userAddress,
           users[ref].referrer,
-          pool.farmingSequence[i],
+          refTokenAddress,
           referralPercents[j],
-          rewards[i] * referralPercents[j] / 100,
+          refReward,
           block.timestamp
         );
 
