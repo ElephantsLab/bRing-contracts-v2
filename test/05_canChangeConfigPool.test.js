@@ -7,6 +7,7 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 const {
     BN,           // Big Number support
     expectRevert, // Assertions for transactions that should fail
+    constants
 } = require('@openzeppelin/test-helpers');
 
 contract("owner should be able change config pool", async accounts => {
@@ -49,7 +50,9 @@ contract("owner should be able change config pool", async accounts => {
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            constants.ZERO_ADDRESS,
+            0)
     })
 
     it("send tokens to the contract address", async () => {

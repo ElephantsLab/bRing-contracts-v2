@@ -7,7 +7,8 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 const {
     BN,           // Big Number support
     expectRevert, // Assertions for transactions that should fail
-    time
+    time,
+    constants
 } = require('@openzeppelin/test-helpers');
 
 contract("check require statements of bRingFarming", async accounts => {
@@ -53,7 +54,9 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[0])).mul(tokenbits), 
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
-            ], 
+            ],
+            constants.ZERO_ADDRESS,
+            0, 
             { from: deployer } );
 
         let tokenContractBalance;
@@ -102,7 +105,9 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[0])).mul(tokenbits), 
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
-            ], 
+            ],
+            constants.ZERO_ADDRESS,
+            0, 
             { from: deployer } );
 
         let tokenContractBalance;
@@ -151,7 +156,9 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[0])).mul(tokenbits), 
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
-            ], 
+            ],
+            constants.ZERO_ADDRESS,
+            0, 
             { from: deployer } );
 
         let tokenContractBalance;

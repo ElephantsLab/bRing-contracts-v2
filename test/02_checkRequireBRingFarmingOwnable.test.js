@@ -81,7 +81,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid token contract address'
         );
     })
@@ -105,7 +107,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
         );
 
@@ -117,7 +121,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
         );
 
@@ -129,7 +135,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
         );
     })
@@ -151,7 +159,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid total stake limit value'
         );
     })
@@ -173,7 +183,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: deployer } ),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: deployer } ),
                 'Invalid configuration data'
         );
     })
@@ -197,7 +209,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ]);
+            ],
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];
@@ -333,7 +347,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ]);
+            ],
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];

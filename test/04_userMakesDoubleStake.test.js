@@ -6,6 +6,7 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
+    constants
 } = require('@openzeppelin/test-helpers');
 
 contract("user should be able to do two stakes in a row one by one", async accounts => {
@@ -51,7 +52,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
                 (new BN(tokenRewards[0])).mul(tokenbits), 
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
-            ], 
+            ],
+            constants.ZERO_ADDRESS,
+            0, 
             { from: deployer } )
     })
 
@@ -69,7 +72,7 @@ contract("user should be able to do two stakes in a row one by one", async accou
             await tokensNames[i].transfer(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: deployer });
             tokenContractBalance = await tokensNames[i].balanceOf.call(bRingFarmingAddress);
             assert.equal(tokenContractBalance.valueOf(), Number((new BN(maxStakeAmount)).mul(tokenbits)), `contract ${tokensNames[i]} balance is wrong`);
-        }
+        }   
     })
 
     it("user address should have firstToken in his address", async () => {

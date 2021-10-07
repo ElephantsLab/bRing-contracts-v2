@@ -6,7 +6,8 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
-    time
+    time,
+    constants
 } = require('@openzeppelin/test-helpers');
 
 contract("check stake reward distribution without referrer", async accounts => {
@@ -58,7 +59,9 @@ contract("check stake reward distribution without referrer", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ])
+            ],
+            constants.ZERO_ADDRESS,
+            0)
     })
 
     it("send tokens to the contract address", async () => {

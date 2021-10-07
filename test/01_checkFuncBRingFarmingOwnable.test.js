@@ -110,7 +110,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[0])).mul(tokenbits), 
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
-                ], { from: anotherWallet }),
+                ],
+                constants.ZERO_ADDRESS,
+                0, { from: anotherWallet }),
                 'Ownable: caller is not the owner'
         );
     })
@@ -129,7 +131,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)]);
+            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];
@@ -190,7 +194,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ]);
+            ],
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];
@@ -262,7 +268,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ]);
+            ],
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];

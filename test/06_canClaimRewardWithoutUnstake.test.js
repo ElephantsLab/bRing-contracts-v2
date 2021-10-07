@@ -6,7 +6,8 @@ const bRingFarmingContract = artifacts.require("BRingFarming");
 
 const {
     BN,           // Big Number support
-    time
+    time,
+    constants
 } = require('@openzeppelin/test-helpers');
 
 contract("user should be able claim reward without unstake", async accounts => {
@@ -48,7 +49,9 @@ contract("user should be able claim reward without unstake", async accounts => {
         await bRingFarming.configPool(secondTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            constants.ZERO_ADDRESS,
+            0)
     })
 
     it("send tokens to the contract address", async () => {

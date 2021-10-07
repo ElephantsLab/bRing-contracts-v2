@@ -11,7 +11,7 @@ contract BRingToken is ERC20 {
   constructor() ERC20("bRing Token", "BRNG") {
     uint256 initialSupply = 10000000;
 
-    _mint(INITIAL_SUPPLY_ADDRESS, initialSupply * (10 ** uint256(decimals())));
+    _mint(msg.sender, initialSupply * (10 ** uint256(decimals())));
   }
 
   function batchTransfer(address[] memory addresses, uint256[] memory amounts) public {
