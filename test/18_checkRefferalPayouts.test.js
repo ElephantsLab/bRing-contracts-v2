@@ -25,7 +25,7 @@ contract("check reward with different referral levels and without referrer", asy
 
     let stakeAmount = 10000;
 
-    const referralMultiplier = 1000;
+    const referralMultiplier = 10000000000;
     const referralPercents = [3, 2, 1];
 
     before(async () => {

@@ -44,7 +44,6 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakedTokenAddress = stakedTokenAddress;
     _stake.amount = amount;
     _stake.stakeTime = block.timestamp;
-    _stake.multiplier = 1;
 
     // Update pool data
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
@@ -110,20 +109,17 @@ contract BRingFarming is BRingFarmingOwnable {
     _unstake(userAddress, stakeIdx);
   }
 
-  function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccsAndMul) private {
-    uint256 multiplier = getStakeMultiplier(_stake);
-
+  function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccs) private {
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
-      uint256 reward = (_stake.multiplier + multiplier)
+      uint256 reward = getStakeMultiplier(_stake)
         * _stake.amount
         * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
         / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION
-        / 2;
+        / STAKE_MULTIPLIER_PRECISION;
 
-      if (updateStakeAccsAndMul) {
+      if (updateStakeAccs) {
         _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
       }
 
@@ -164,10 +160,6 @@ contract BRingFarming is BRingFarmingOwnable {
         }
       }
     }
-
-    if (updateStakeAccsAndMul) {
-      _stake.multiplier = multiplier;
-    }
   }
 
   function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) override internal view returns (uint256) {
@@ -192,15 +184,12 @@ contract BRingFarming is BRingFarmingOwnable {
       return rewards;
     }
 
-    uint256 multiplier = getStakeMultiplier(_stake);
-
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      rewards[i] = (_stake.multiplier + multiplier)
+      rewards[i] = getStakeMultiplier(_stake)
         * (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
         * _stake.amount
         / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION
-        / 2;
+        / STAKE_MULTIPLIER_PRECISION;
     }
   }
 

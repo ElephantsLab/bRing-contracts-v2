@@ -32,7 +32,6 @@ struct StakeData {
   address stakedTokenAddress;
   uint256 amount;
   uint256[10] stakeAcc;
-  uint256 multiplier;
   uint256 stakeTime;
   uint256 unstakeTime;
 }
