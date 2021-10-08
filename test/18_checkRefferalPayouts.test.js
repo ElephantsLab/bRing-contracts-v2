@@ -47,7 +47,7 @@ contract("check reward with different referral levels and without referrer", asy
     it("config Pool", async () => {
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
-        let tokenRewards = [1, 1];
+        let tokenRewards = [1, 2];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
@@ -132,15 +132,19 @@ contract("check reward with different referral levels and without referrer", asy
 
         await bRingFarming.unstake(stakeId, { from: secondAddr });
 
-        console.log("--------");
-        console.log("manual ref payouts", ((Number(stakeRew[0]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits));
-        console.log("1 user bal payouts", Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits);
-        // console.log("2 user bal payouts", Number(await BRNGToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits);
-        console.log("--------");
-
-        let expectedFirstLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+        let expectedFirstLineRefPayouts = 0, expectedPayouts;
+        for(let i = 0; i < stakeRew.length; i++) {
+            if(Number(stakeRew[i]) != 0) {
+                expectedPayouts = Number((Number(stakeRew[i]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedFirstLineRefPayouts += expectedPayouts;
+            }           
+        }
 
         let firstUserBalance = Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
+        console.log("--------");
+        console.log("manual ref payouts", expectedFirstLineRefPayouts);
+        console.log("1 user bal payouts", firstUserBalance);
+        console.log("--------");
 
         assert.equal(expectedFirstLineRefPayouts, firstUserBalance, "referral payouts is wrong"); 
     })
@@ -156,8 +160,16 @@ contract("check reward with different referral levels and without referrer", asy
 
         await bRingFarming.unstake(stakeId, { from: thirdAddr });
 
-        let expectedFirstLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
-        let expectedSecondLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[1] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+        let expectedFirstLineRefPayouts = 0, expectedSecondLineRefPayouts = 0;
+        let expectedPayoutsThreePercents, expectedPayoutsTwoPercents;
+        for(let i = 0; i < stakeRew.length; i++) {
+            if(Number(stakeRew[i]) != 0) {
+                expectedPayoutsThreePercents = Number((Number(stakeRew[i]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedPayoutsTwoPercents = Number((Number(stakeRew[i]) * referralPercents[1] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedFirstLineRefPayouts += expectedPayoutsThreePercents;
+                expectedSecondLineRefPayouts += expectedPayoutsTwoPercents;
+            }           
+        }
 
         let firstUserBalance = Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
         let secondUserBalance = Number(await BRNGToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits;
@@ -185,9 +197,18 @@ contract("check reward with different referral levels and without referrer", asy
 
         await bRingFarming.unstake(stakeId, { from: fourthAddr });
 
-        let expectedFirstLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
-        let expectedSecondLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[1] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
-        let expectedThirdLineRefPayouts = ((Number(stakeRew[0]) * referralPercents[2] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+        let expectedFirstLineRefPayouts = 0, expectedSecondLineRefPayouts = 0, expectedThirdLineRefPayouts = 0;
+        let expectedPayoutsThreePercents, expectedPayoutsTwoPercents, expectedPayoutsOnePercent;
+        for(let i = 0; i < stakeRew.length; i++) {
+            if(Number(stakeRew[i]) != 0) {
+                expectedPayoutsThreePercents = Number((Number(stakeRew[i]) * referralPercents[0] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedPayoutsTwoPercents = Number((Number(stakeRew[i]) * referralPercents[1] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedPayoutsOnePercent = Number((Number(stakeRew[i]) * referralPercents[2] * referralMultiplier / Math.pow(10, 10) / 100)  / tokenbits);
+                expectedFirstLineRefPayouts += expectedPayoutsThreePercents;
+                expectedSecondLineRefPayouts += expectedPayoutsTwoPercents;
+                expectedThirdLineRefPayouts += expectedPayoutsOnePercent;
+            }           
+        }
 
         let firstUserBalance = Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
         let secondUserBalance = Number(await BRNGToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits;
