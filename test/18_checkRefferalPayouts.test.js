@@ -141,6 +141,7 @@ contract("check reward with different referral levels and without referrer", asy
         }
 
         let firstUserBalance = Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
+        
         console.log("--------");
         console.log("manual ref payouts", expectedFirstLineRefPayouts);
         console.log("1 user bal payouts", firstUserBalance);
@@ -176,10 +177,10 @@ contract("check reward with different referral levels and without referrer", asy
 
         console.log("--------");
         console.log("manual ref payouts", expectedFirstLineRefPayouts + expectedSecondLineRefPayouts);
-        console.log("1 user bal payouts", Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits);
+        console.log("1 user bal payouts", firstUserBalance);
         console.log("---");
         console.log("manual ref payouts", expectedFirstLineRefPayouts);       
-        console.log("2 user bal payouts", Number(await BRNGToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits);
+        console.log("2 user bal payouts", secondUserBalance);
         console.log("--------");
 
         assert.equal(expectedFirstLineRefPayouts + expectedSecondLineRefPayouts, firstUserBalance, "referral payouts is wrong (firstAddr)"); 
@@ -216,13 +217,13 @@ contract("check reward with different referral levels and without referrer", asy
 
         console.log("--------");
         console.log("manual ref payouts", expectedFirstLineRefPayouts + expectedSecondLineRefPayouts + expectedThirdLineRefPayouts);
-        console.log("1 user bal payouts", Number(await BRNGToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits);
+        console.log("1 user bal payouts", firstUserBalance);
         console.log("---");
         console.log("manual ref payouts", expectedFirstLineRefPayouts + expectedSecondLineRefPayouts);       
-        console.log("2 user bal payouts", Number(await BRNGToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits);
+        console.log("2 user bal payouts", secondUserBalance);
         console.log("---");
         console.log("manual ref payouts", expectedFirstLineRefPayouts);
-        console.log("3 user bal payouts", Number(await BRNGToken.balanceOf(thirdAddr, { from: thirdAddr })) / tokenbits);
+        console.log("3 user bal payouts", thirdUserBalance);
         console.log("--------");
 
         assert.equal(expectedFirstLineRefPayouts + expectedSecondLineRefPayouts + expectedThirdLineRefPayouts, 
