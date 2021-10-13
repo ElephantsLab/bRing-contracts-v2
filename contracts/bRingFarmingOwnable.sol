@@ -104,7 +104,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
   uint256 public constant REFERRAL_MULTIPLIER_DECIMALS = 10;
 
   constructor() {
-    stakingDuration = 90 * 24 * 3600; // 90 days
+    stakingDuration = 90 * 3600; // 90 days
 
     for (uint8 i = 0; i < referralPercents.length; i++) {
       totalReferralPercent+= referralPercents[i];
