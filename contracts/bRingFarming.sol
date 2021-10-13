@@ -269,4 +269,15 @@ contract BRingFarming is BRingFarmingOwnable {
     return users[userAddress].referrals.length;
   }
 
+  function getPoolPenaltyInfo(address stakedTokenAddress) external view returns (uint256 penaltyPercent, uint256 timeLeft) {
+    Pool memory pool = pools[stakedTokenAddress];
+
+    penaltyPercent = getPenaltyPercent(pool);
+    timeLeft = 0;
+    uint256 time = block.timestamp - contractDeploymentTime;
+    if (time < pool.penaltyDuration) {
+      timeLeft = pool.penaltyDuration - time;
+    }
+  }
+
 }
