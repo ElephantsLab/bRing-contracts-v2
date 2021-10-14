@@ -8,7 +8,7 @@ import "./BRingFarmingOwnable.sol";
 contract BRingFarming is BRingFarmingOwnable {
 
   uint256 private constant ACC_PRECISION = 1e12;
-  uint256 private constant STAKE_MULTIPLIER_PRECISION = 1e12;
+  uint256 private constant PENALTY_PRECISION = 1e12;
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
     require(amount > 0, "Invalid stake amount value");
@@ -113,11 +113,16 @@ contract BRingFarming is BRingFarmingOwnable {
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
 
-      uint256 reward = getStakeMultiplier(_stake)
-        * _stake.amount
+      uint256 reward = _stake.amount
         * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
-        / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION;
+        / ACC_PRECISION;
+
+      uint256 userReward = _stake.amount
+        * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
+        * (100 * PENALTY_PRECISION - getPenaltyPercent(pool))
+        / 100
+        / PENALTY_PRECISION
+        / ACC_PRECISION;
 
       if (updateStakeAccs) {
         _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
@@ -128,7 +133,10 @@ contract BRingFarming is BRingFarmingOwnable {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 90 / 100);
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 90 / 100, block.timestamp);
       } else {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 94 / 100);
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, userReward * 94 / 100);
+        if (reward > userReward) {
+          IERC20(pool.farmingSequence[i]).transfer(pool.penaltyReceiver, (reward - userReward) * 94 / 100);
+        }
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 94 / 100, block.timestamp);
 
         address refTokenAddress = pool.farmingSequence[i];
@@ -176,7 +184,7 @@ contract BRingFarming is BRingFarmingOwnable {
         + ACC_PRECISION * (actualTime - pool.lastOperationTime) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
   }
 
-  function getStakeRewards(address userAddress, uint256 stakeIdx) external view returns (uint256[10] memory rewards) {
+  function getStakeRewards(address userAddress, uint256 stakeIdx, bool afterPenalty) external view returns (uint256[10] memory rewards) {
     StakeData memory _stake = stakes[userAddress][stakeIdx];
     Pool memory pool = pools[_stake.stakedTokenAddress];
 
@@ -185,21 +193,26 @@ contract BRingFarming is BRingFarmingOwnable {
     }
 
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      rewards[i] = getStakeMultiplier(_stake)
-        * (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
+      rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
         * _stake.amount
-        / ACC_PRECISION
-        / STAKE_MULTIPLIER_PRECISION;
+        * (afterPenalty ? ((100 * PENALTY_PRECISION - getPenaltyPercent(pool))
+        / 100
+        / PENALTY_PRECISION) : 1)
+        / ACC_PRECISION;
     }
   }
 
-  function getStakeMultiplier(StakeData memory _stake) private view returns (uint256) {
-    uint256 currentStakeTime = block.timestamp;
-    if (contractDeploymentTime + stakingDuration < currentStakeTime) {
-      currentStakeTime = contractDeploymentTime + stakingDuration;
+  function getPenaltyPercent(Pool memory pool) public view returns(uint256) {
+    if (pool.maxPenalty == 0 || pool.penaltyDuration == 0) {
+      return 0;
     }
 
-    return STAKE_MULTIPLIER_PRECISION + STAKE_MULTIPLIER_PRECISION * (stakeMultiplier - 1) * (currentStakeTime - _stake.stakeTime) / stakingDuration;
+    uint256 time = block.timestamp - contractDeploymentTime;
+    if (time >= pool.penaltyDuration) {
+      return 0;
+    }
+
+    return pool.maxPenalty * (pool.penaltyDuration - time) * PENALTY_PRECISION / pool.penaltyDuration;
   }
 
   /**
@@ -254,6 +267,17 @@ contract BRingFarming is BRingFarmingOwnable {
 
   function getReferralsNumber(address userAddress) public view returns (uint256) {
     return users[userAddress].referrals.length;
+  }
+
+  function getPoolPenaltyInfo(address stakedTokenAddress) external view returns (uint256 penaltyPercent, uint256 timeLeft) {
+    Pool memory pool = pools[stakedTokenAddress];
+
+    penaltyPercent = getPenaltyPercent(pool);
+    timeLeft = 0;
+    uint256 time = block.timestamp - contractDeploymentTime;
+    if (time < pool.penaltyDuration) {
+      timeLeft = pool.penaltyDuration - time;
+    }
   }
 
 }

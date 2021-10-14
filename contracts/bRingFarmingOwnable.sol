@@ -17,6 +17,10 @@ struct Pool {
   uint256 lastOperationTime;
   uint256 totalStaked;
 
+  uint256 maxPenalty;
+  uint256 penaltyDuration;
+  address penaltyReceiver;
+
   address referralRewardTokenAddress;
   uint256 referralMultiplier;
 }
@@ -95,15 +99,12 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
   uint256 public stakingDuration;
   uint256 public contractDeploymentTime;
 
-  uint256 public stakeMultiplier;
-
   uint256[] public referralPercents = [3, 2, 1]; // 3%, 2%, 1%
   uint256 public totalReferralPercent;
   uint256 public constant REFERRAL_MULTIPLIER_DECIMALS = 10;
 
   constructor() {
     stakingDuration = 90 * 24 * 3600; // 90 days
-    stakeMultiplier = 3;
 
     for (uint8 i = 0; i < referralPercents.length; i++) {
       totalReferralPercent+= referralPercents[i];
@@ -116,12 +117,6 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     require(_days > 0, "Invalid number of days");
 
     stakingDuration = _days * 24 * 3600;
-  }
-
-  function changeStakeMultiplier(uint256 _multiplier) external onlyOwner {
-    require(_multiplier > 0, "Invalid multiplier value");
-
-    stakeMultiplier = _multiplier;
   }
 
   function changeReferralPercents(uint256[] memory _referralPercents) external onlyOwner {
@@ -144,6 +139,9 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * @param totalStakeLimit Total pool staked amount top limit. If equal zero - no limit.
    * @param farmingSequence List of farming tokens addresses.
    * @param rewardRates List of rewards per second for every token from the farming sequence list.
+   * @param maxPenalty Max penalty percent.
+   * @param penaltyDuration Penalty duration in days.
+   * @param penaltyReceiver Penalty receiver address.
    * @param referralRewardTokenAddress If zero address then standard logic, otherwise - reward will be awarded in specified tokens.
    * @param referralMultiplier Referral tokens multiplier.
    */
@@ -154,6 +152,9 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     uint256 totalStakeLimit,
     address[] memory farmingSequence,
     uint256[] memory rewardRates,
+    uint256 maxPenalty,
+    uint256 penaltyDuration,
+    address penaltyReceiver,
     address referralRewardTokenAddress,
     uint256 referralMultiplier
   ) external onlyOwner {
@@ -161,6 +162,9 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     require(minStakeAmount > 0 && minStakeAmount < maxStakeAmount, "Invalid min or max stake amounts values");
     require(maxStakeAmount < totalStakeLimit || totalStakeLimit == 0, "Invalid total stake limit value");
     require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
+    require(maxPenalty < 100, "Invalid max penalty percent");
+    require(penaltyDuration <= stakingDuration, "Invalid penalty duration");
+    require(penaltyReceiver != address(0x0), "Invalid penalty receiver address");
 
     pools[stakedTokenAddress].minStakeAmount = minStakeAmount;
     pools[stakedTokenAddress].maxStakeAmount = maxStakeAmount;
@@ -172,6 +176,10 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
 
     pools[stakedTokenAddress].farmingSequence = farmingSequence;
     pools[stakedTokenAddress].rewardRates = rewardRates;
+
+    pools[stakedTokenAddress].maxPenalty = maxPenalty;
+    pools[stakedTokenAddress].penaltyDuration = penaltyDuration;
+    pools[stakedTokenAddress].penaltyReceiver = penaltyReceiver;
 
     pools[stakedTokenAddress].referralRewardTokenAddress = referralRewardTokenAddress;
     pools[stakedTokenAddress].referralMultiplier = referralMultiplier;
