@@ -257,6 +257,38 @@ contract BRingFarming is BRingFarmingOwnable {
     );
   }
 
+  function getUserInfo(address userAddress) external view 
+    returns (
+      uint256[] memory,
+      address[] memory,
+      uint256[] memory,
+      uint256[] memory,
+      uint256[] memory,
+      address,
+      uint256
+    ) 
+  {
+    uint256[] memory idxs = new uint256[](stakes[userAddress].length);
+    address[] memory stakedTokenAddresses = new address[](stakes[userAddress].length);
+    uint256[] memory amounts = new uint256[](stakes[userAddress].length);
+    uint256[] memory stakeTimes = new uint256[](stakes[userAddress].length);
+    uint256[] memory unstakeTimes = new uint256[](stakes[userAddress].length);
+
+    for (uint8 i = 0; i < uint8(stakes[userAddress].length); i++) {
+      idxs[i] = stakes[userAddress][i].idx;
+      stakedTokenAddresses[i] = stakes[userAddress][i].stakedTokenAddress;
+      amounts[i] = stakes[userAddress][i].amount;
+      stakeTimes[i] = stakes[userAddress][i].stakeTime;
+      unstakeTimes[i] = stakes[userAddress][i].unstakeTime;
+    }
+    
+    User storage user = users[userAddress];
+
+     return (
+      idxs, stakedTokenAddresses, amounts, stakeTimes, unstakeTimes, user.referrer, user.referrals.length
+    );
+  }
+
   function isActiveUser(address userAddress) public view returns (bool) {
     return (users[userAddress].registrationTime > 0);
   }
