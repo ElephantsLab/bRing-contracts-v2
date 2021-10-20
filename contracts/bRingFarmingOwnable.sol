@@ -140,7 +140,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
    * @param farmingSequence List of farming tokens addresses.
    * @param rewardRates List of rewards per second for every token from the farming sequence list.
    * @param maxPenalty Max penalty percent.
-   * @param penaltyDuration Penalty duration in days.
+   * @param penaltyDuration Penalty duration in seconds.
    * @param penaltyReceiver Penalty receiver address.
    * @param referralRewardTokenAddress If zero address then standard logic, otherwise - reward will be awarded in specified tokens.
    * @param referralMultiplier Referral tokens multiplier.
