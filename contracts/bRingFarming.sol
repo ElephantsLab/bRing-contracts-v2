@@ -130,7 +130,10 @@ contract BRingFarming is BRingFarmingOwnable {
 
       // Transfer reward and pay referral reward
       if (users[userAddress].referrer == address(0x0)) {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, reward * 90 / 100);
+        IERC20(pool.farmingSequence[i]).transfer(userAddress, userReward * 90 / 100);
+        if (reward > userReward) {
+          IERC20(pool.farmingSequence[i]).transfer(pool.penaltyReceiver, (reward - userReward) * 90 / 100);
+        }
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 90 / 100, block.timestamp);
       } else {
         IERC20(pool.farmingSequence[i]).transfer(userAddress, userReward * 94 / 100);
