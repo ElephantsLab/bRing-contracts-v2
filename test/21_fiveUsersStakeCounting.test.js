@@ -108,11 +108,10 @@ contract("users make stake and claim before penalty duration time is up", async 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
             stakeId = stakeDetails[0][0];
 
-            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
+            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
             stakeReward = (Number(stakeRew[0]) * 0.9) / tokenbits;
             console.log(`getStakeRewards ${i+1} user:`, stakeReward);
-        }
-       
+        }       
     })
 
     it("four users should get the same reward in 44 day", async () => {
@@ -128,7 +127,7 @@ contract("users make stake and claim before penalty duration time is up", async 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
             stakeId = stakeDetails[0][0];
 
-            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
+            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
             stakeReward = (Number(stakeRew[0]) * 0.9) / tokenbits;
             console.log(`getStakeRewards ${i+1} user:`, stakeReward);
         }     
@@ -148,8 +147,9 @@ contract("users make stake and claim before penalty duration time is up", async 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
             stakeId = stakeDetails[0][0];
 
-            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
+            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
             stakeReward = (Number(stakeRew[0]) * 0.9) / tokenbits;
+            console.log(`getStakeRewards ${i+1} user:`, stakeReward);
         }
         fourtyFiveDaysReward = stakeReward.toFixed(2); 
     })
@@ -181,7 +181,7 @@ contract("users make stake and claim before penalty duration time is up", async 
             stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
             stakeId = stakeDetails[0][0];
 
-            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
+            stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
             stakeReward = (Number(stakeRew[0]) * 0.9) / tokenbits;
         }
 

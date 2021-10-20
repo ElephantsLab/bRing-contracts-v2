@@ -128,7 +128,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, false, { from: firstAddr });
+        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId,  { from: firstAddr });
 
         console.log("---- 1st user ----");
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.9) / tokenbits);
@@ -168,8 +168,13 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("second token balance", secondTokenBalance);
         console.log("----------");
 
-        assert.equal(firstTokenBalance, firstTokenRewWithPenalty, "first token balance is wrong");
-        assert.equal(secondTokenBalance, secondTokenRewWithPenalty, "first token balance is wrong");
+        assert.equal(((Number(stakeRew[0]) * 0.9) / tokenbits).toFixed(2), firstTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+        assert.equal(((Number(stakeRew[1]) * 0.9) / tokenbits).toFixed(2), secondTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+
+        assert.equal(firstTokenBalance.toFixed(2), firstTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
+        assert.equal(secondTokenBalance.toFixed(2), secondTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
     })
 
     it("second user makes claim after stake with ref in 23 days", async () => {
@@ -182,7 +187,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
         let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, false, { from: secondAddr });
+        let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, true, { from: secondAddr });
 
         console.log("---- 2nd user ----");
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.94) / tokenbits);
@@ -221,6 +226,11 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("second token balance", secondTokenBalance);
         console.log("----------");
 
+        assert.equal(((Number(stakeRew[0]) * 0.94) / tokenbits).toFixed(2), firstTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+        assert.equal(((Number(stakeRew[1]) * 0.94) / tokenbits).toFixed(2), secondTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+
         assert.equal(firstTokenBalance.toFixed(2), firstTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
         assert.equal(secondTokenBalance.toFixed(2), secondTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
     })
@@ -235,7 +245,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, { from: thirdAddr });
         let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(thirdAddr, stakeId, false, { from: thirdAddr });
+        let stakeRew = await bRingFarming.getStakeRewards(thirdAddr, stakeId, true, { from: thirdAddr });
 
         console.log("---- 3rd user ----");
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.9) / tokenbits);
@@ -274,8 +284,13 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("second token balance", secondTokenBalance);
         console.log("----------");
 
-        assert.equal(firstTokenBalance, firstTokenRewWithPenalty, "first token balance is wrong");
-        assert.equal(secondTokenBalance, secondTokenRewWithPenalty, "first token balance is wrong");
+        assert.equal(((Number(stakeRew[0]) * 0.9) / tokenbits).toFixed(2), firstTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+        assert.equal(((Number(stakeRew[1]) * 0.9) / tokenbits).toFixed(2), secondTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+
+        assert.equal(firstTokenBalance.toFixed(2), firstTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
+        assert.equal(secondTokenBalance.toFixed(2), secondTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
     })
 
     it("fourth user makes claim after stake without ref in 45 days", async () => {
@@ -374,7 +389,7 @@ contract("users make stake and claim before penalty duration time is up", async 
             - penaltyPercent) / 100 / (new BN(1)).mul((new BN(10)).pow(new BN(12))) * tokenbits;
         console.log("second token manual caunted reward with penalty", secondTokenRewWithPenalty);
 
-        await bRingFarming.unstake(stakeId, { from: fifthAddr });
+        await bRingFarming.unstake(stakeId, { from: fifthAddr });  
 
         let firstTokenBalance = Number(await firstToken.balanceOf.call(fifthAddr, { from: fifthAddr })) / tokenbits;
         let secondTokenBalance = Number(await secondToken.balanceOf.call(fifthAddr, { from: fifthAddr })) / tokenbits;
@@ -382,7 +397,12 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("second token balance", secondTokenBalance);
         console.log("----------");
 
+        assert.equal(((Number(stakeRew[0]) * 0.9) / tokenbits).toFixed(2), (firstTokenBalance - stakeAmount).toFixed(2),
+         "getStakeRewards is wrong")
+        assert.equal(((Number(stakeRew[1]) * 0.9) / tokenbits).toFixed(2), secondTokenBalance.toFixed(2),
+         "getStakeRewards is wrong")
+
         assert.equal((firstTokenBalance - stakeAmount).toFixed(2), (firstTokenReward  * tokenbits).toFixed(2), "first token balance is wrong");
-        assert.equal((secondTokenBalance).toFixed(2), (secondTokenReward * tokenbits).toFixed(2), "first token balance is wrong");
+        assert.equal(secondTokenBalance.toFixed(2), (secondTokenReward * tokenbits).toFixed(2), "first token balance is wrong");
     })
 })
