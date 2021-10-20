@@ -198,10 +198,11 @@ contract BRingFarming is BRingFarmingOwnable {
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
       rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
         * _stake.amount
-        * (afterPenalty ? ((100 * PENALTY_PRECISION - getPenaltyPercent(pool))
-        / 100
-        / PENALTY_PRECISION) : 1)
         / ACC_PRECISION;
+
+      if (afterPenalty) {
+        rewards[i]-= rewards[i] * getPenaltyPercent(pool) / PENALTY_PRECISION / 100;
+      }
     }
   }
 
