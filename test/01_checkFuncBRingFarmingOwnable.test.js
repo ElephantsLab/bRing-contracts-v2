@@ -54,23 +54,23 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         assert.equal((stakingDuration / 24 / 3600), newStakingDuration, "staking duration is wrong");
     })
 
-    it("should revert for NOT owner caller func changeStakeMultiplier", async () => {
-        const stakeMultiplier = new BN(1);
+    // it("should revert for NOT owner caller func changeStakeMultiplier", async () => {
+    //     const stakeMultiplier = new BN(1);
 
-        await expectRevert(
-            bRingFarming.changeStakeMultiplier(stakeMultiplier, { from: anotherWallet }),
-            'Ownable: caller is not the owner'
-        );
-    })
+    //     await expectRevert(
+    //         bRingFarming.changeStakeMultiplier(stakeMultiplier, { from: anotherWallet }),
+    //         'Ownable: caller is not the owner'
+    //     );
+    // })
 
-    it("owner should be able change stake multiplier", async () => {
-        const newStakeMultiplier = 2;
+    // it("owner should be able change stake multiplier", async () => {
+    //     const newStakeMultiplier = 2;
 
-        await bRingFarming.changeStakeMultiplier(newStakeMultiplier, { from: deployer });
-        let stakeMultiplier = await bRingFarming.stakeMultiplier({ from: deployer });
+    //     await bRingFarming.changeStakeMultiplier(newStakeMultiplier, { from: deployer });
+    //     let stakeMultiplier = await bRingFarming.stakeMultiplier({ from: deployer });
 
-        assert.equal(stakeMultiplier, newStakeMultiplier, "stake multiplier is wrong");
-    })
+    //     assert.equal(stakeMultiplier, newStakeMultiplier, "stake multiplier is wrong");
+    // })
 
     it("should revert for NOT owner caller func 'changeReferralPercents'", async () => {
         const newRefPercents = [5, 4, 3, 2];
@@ -99,6 +99,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
@@ -111,6 +114,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: anotherWallet }),
                 'Ownable: caller is not the owner'
@@ -123,6 +127,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let stakeAmount = 1000;
 
         const decimals = await firstToken.decimals();
@@ -132,6 +139,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
             [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0);
 
@@ -182,6 +190,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let stakeAmount = 1000;
 
         const decimals = await firstToken.decimals();
@@ -195,6 +206,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0);
 
@@ -256,6 +268,9 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
         let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let stakeAmount = 1000;
 
         const decimals = await firstToken.decimals();
@@ -269,6 +284,7 @@ contract("check functionality of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0);
 

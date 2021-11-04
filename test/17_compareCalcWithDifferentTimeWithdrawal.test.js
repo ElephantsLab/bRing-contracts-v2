@@ -39,11 +39,15 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             const tokenbits = (new BN(10)).pow(decimals);
             let tokenRewards = [1];
             const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+            const maxPenalty = new BN(0);
+            const penaltyDuration = 45 * 24 * 3600;
     
             await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
                 (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
                 [firstTokenAddress], 
                 [(new BN(tokenRewards[0])).mul(rewardsTokenbits)],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0)
         })
@@ -110,63 +114,63 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             await bRingFarming.unstake(stakeId, { from: firstAddr });
         })
     
-        it("users make unstakes after 90 days", async () => {
-            const decimals = await firstToken.decimals();
-            const tokenbits = (new BN(10)).pow(decimals);
+        // it("users make unstakes after 90 days", async () => {
+        //     const decimals = await firstToken.decimals();
+        //     const tokenbits = (new BN(10)).pow(decimals);
     
-            let users = [secondAddr, thirdAddr, fourthAddr, fifthAddr];
-            let stakeDetails, stakeId;
-            let userBalance;
+        //     let users = [secondAddr, thirdAddr, fourthAddr, fifthAddr];
+        //     let stakeDetails, stakeId;
+        //     let userBalance;
     
-            await time.increase(time.duration.days(90));
+        //     await time.increase(time.duration.days(90));
     
-            const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-            const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-            let poolEndTime = contractDeplTime + stakingDuration;
+        //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+        //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+        //     let poolEndTime = contractDeplTime + stakingDuration;
     
-            let userStakingDetails, stakeStartTime;
-            let poolData, totalStaked, rewardWithoutMultiplier;
-            let rewardRatePerTime = 0.001;
-            const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+        //     let userStakingDetails, stakeStartTime;
+        //     let poolData, totalStaked, rewardWithoutMultiplier;
+        //     let rewardRatePerTime = 0.001;
+        //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
     
-            let daysPassedBeforeStake, stakingTime, multiplier;
-            // let stakeRew;
+        //     let daysPassedBeforeStake, stakingTime, multiplier;
+        //     // let stakeRew;
     
-            for(let i = 0; i < users.length; i++) {
-                userStakingDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
-                stakeStartTime = Number(userStakingDetails[3][0]);
+        //     for(let i = 0; i < users.length; i++) {
+        //         userStakingDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+        //         stakeStartTime = Number(userStakingDetails[3][0]);
     
-                poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
-                totalStaked = Number(poolData.totalStaked);
-                rewardWithoutMultiplier = stakeAmount * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
+        //         poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
+        //         totalStaked = Number(poolData.totalStaked);
+        //         rewardWithoutMultiplier = stakeAmount * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
     
-                daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-                stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+        //         daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+        //         stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
     
-                multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
+        //         multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
     
-                console.log(`-- ${i+2} user --`);
-                console.log("ui calc", (rewardWithoutMultiplier * multiplier / 2 * 0.9) * tokenbits);
-                console.log("--------");
-            }
+        //         console.log(`-- ${i+2} user --`);
+        //         console.log("ui calc", (rewardWithoutMultiplier * multiplier / 2 * 0.9) * tokenbits);
+        //         console.log("--------");
+        //     }
     
-            for(let i = 0; i < users.length; i++) {
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
-                stakeId = stakeDetails[0][0];
+        //     for(let i = 0; i < users.length; i++) {
+        //         stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+        //         stakeId = stakeDetails[0][0];
     
-                // stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, { from: users[i] });
+        //         // stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, { from: users[i] });
             
-                // console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
-                // console.log("--------");
+        //         // console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
+        //         // console.log("--------");
     
-                await bRingFarming.unstake(stakeId, { from: users[i] });
-                userBalance = Number(await firstToken.balanceOf(users[i], { from: users[i] })) / tokenbits;
+        //         await bRingFarming.unstake(stakeId, { from: users[i] });
+        //         userBalance = Number(await firstToken.balanceOf(users[i], { from: users[i] })) / tokenbits;
     
-                console.log(`-- ${i+2} user --`);
-                console.log("balance: ", userBalance - stakeAmount);
-                console.log("--------");
-            }
-        })
+        //         console.log(`-- ${i+2} user --`);
+        //         console.log("balance: ", userBalance - stakeAmount);
+        //         console.log("--------");
+        //     }
+        // })
     
     })
 
@@ -200,11 +204,15 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             const tokenbits = (new BN(10)).pow(decimals);
             let tokenRewards = [1];
             const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+            const maxPenalty = new BN(0);
+            const penaltyDuration = 45 * 24 * 3600;
     
             await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
                 (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
                 [firstTokenAddress], 
                 [(new BN(tokenRewards[0])).mul(rewardsTokenbits)],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0)
         })
@@ -271,63 +279,63 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             await bRingFarming.claimReward(stakeId, { from: firstAddr });
         })
     
-        it("users make unstakes after 90 days", async () => {
-            const decimals = await firstToken.decimals();
-            const tokenbits = (new BN(10)).pow(decimals);
+        // it("users make unstakes after 90 days", async () => {
+        //     const decimals = await firstToken.decimals();
+        //     const tokenbits = (new BN(10)).pow(decimals);
     
-            let users = [firstAddr, secondAddr, thirdAddr, fourthAddr, fifthAddr];
-            let stakeDetails, stakeId;
-            let userBalance;
+        //     let users = [firstAddr, secondAddr, thirdAddr, fourthAddr, fifthAddr];
+        //     let stakeDetails, stakeId;
+        //     let userBalance;
     
-            await time.increase(time.duration.days(90));
+        //     await time.increase(time.duration.days(90));
     
-            const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-            const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-            let poolEndTime = contractDeplTime + stakingDuration;
+        //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+        //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+        //     let poolEndTime = contractDeplTime + stakingDuration;
     
-            let userStakingDetails, stakeStartTime;
-            let poolData, totalStaked, rewardWithoutMultiplier;
-            let rewardRatePerTime = 0.001;
-            const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+        //     let userStakingDetails, stakeStartTime;
+        //     let poolData, totalStaked, rewardWithoutMultiplier;
+        //     let rewardRatePerTime = 0.001;
+        //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
     
-            let daysPassedBeforeStake, stakingTime, multiplier;
-            // let stakeRew;
+        //     let daysPassedBeforeStake, stakingTime, multiplier;
+        //     // let stakeRew;
     
-            for(let i = 0; i < users.length; i++) {
-                userStakingDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
-                stakeStartTime = Number(userStakingDetails[3][0]);
+        //     for(let i = 0; i < users.length; i++) {
+        //         userStakingDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+        //         stakeStartTime = Number(userStakingDetails[3][0]);
     
-                poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
-                totalStaked = Number(poolData.totalStaked);
-                rewardWithoutMultiplier = stakeAmount * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
+        //         poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
+        //         totalStaked = Number(poolData.totalStaked);
+        //         rewardWithoutMultiplier = stakeAmount * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
     
-                daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-                stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+        //         daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+        //         stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
     
-                multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
+        //         multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
     
-                console.log(`-- ${i+1} user --`);
-                console.log("ui calc", (rewardWithoutMultiplier * multiplier / 2 * 0.9) * tokenbits);
-                console.log("--------");
-            }
+        //         console.log(`-- ${i+1} user --`);
+        //         console.log("ui calc", (rewardWithoutMultiplier * multiplier / 2 * 0.9) * tokenbits);
+        //         console.log("--------");
+        //     }
     
-            for(let i = 0; i < users.length; i++) {
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
-                stakeId = stakeDetails[0][0];
+        //     for(let i = 0; i < users.length; i++) {
+        //         stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+        //         stakeId = stakeDetails[0][0];
     
-                // stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, { from: users[i] });
+        //         // stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, { from: users[i] });
             
-                // console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
-                // console.log("--------");
+        //         // console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
+        //         // console.log("--------");
     
-                await bRingFarming.unstake(stakeId, { from: users[i] });
-                userBalance = Number(await firstToken.balanceOf(users[i], { from: users[i] })) / tokenbits;
+        //         await bRingFarming.unstake(stakeId, { from: users[i] });
+        //         userBalance = Number(await firstToken.balanceOf(users[i], { from: users[i] })) / tokenbits;
     
-                console.log(`-- ${i+1} user --`);
-                console.log("balance: ", userBalance - stakeAmount);
-                console.log("--------");
-            }
-        })
+        //         console.log(`-- ${i+1} user --`);
+        //         console.log("balance: ", userBalance - stakeAmount);
+        //         console.log("--------");
+        //     }
+        // })
     
     })
 })

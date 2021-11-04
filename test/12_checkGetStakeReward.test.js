@@ -50,6 +50,9 @@ contract("check expected reward", async accounts => {
         let tokenRewards = [277, 277, 277];
         const rewardsTokenbits = (new BN(10)).pow(new BN(12));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
@@ -58,6 +61,7 @@ contract("check expected reward", async accounts => {
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0)
     })
@@ -169,139 +173,139 @@ contract("check expected reward", async accounts => {
         await bRingFarming.stake(fifthAddr, firstTokenAddress, (new BN(tenThousand)).mul(tokenbits), { from: fifthAddr });
     })
 
-    it("firstAddr 1st Stake difference ui vs contract", async () => {
-        await time.increase(time.duration.days(90));
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+    // it("firstAddr 1st Stake difference ui vs contract", async () => {
+    //     await time.increase(time.duration.days(90));
+    //     const decimals = await firstToken.decimals();
+    //     const tokenbits = (new BN(10)).pow(decimals);
 
-        const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-        const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-        let poolEndTime = contractDeplTime + stakingDuration;
+    //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+    //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+    //     let poolEndTime = contractDeplTime + stakingDuration;
 
-        let firstUserStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeStartTime = Number(firstUserStakingDetails[3][0]);
+    //     let firstUserStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeStartTime = Number(firstUserStakingDetails[3][0]);
 
-        let poolData = await bRingFarming.pools(firstTokenAddress);
-        let totalStaked = Number(poolData.totalStaked);
-        let rewardRatePerTime = 0.000277;
-        let rewardWithoutMultiplier = (oneThousand * ( poolEndTime - stakeStartTime ) / totalStaked * rewardRatePerTime);
+    //     let poolData = await bRingFarming.pools(firstTokenAddress);
+    //     let totalStaked = Number(poolData.totalStaked);
+    //     let rewardRatePerTime = 0.000277;
+    //     let rewardWithoutMultiplier = (oneThousand * ( poolEndTime - stakeStartTime ) / totalStaked * rewardRatePerTime);
 
-        const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
-        const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-        const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+    //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+    //     const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+    //     const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
         
-        let multiplier = 1 + (maxMultiplier - 1) * stakingTime / stakingDuration;
+    //     let multiplier = 1 + (maxMultiplier - 1) * stakingTime / stakingDuration;
 
-        console.log('firstAddr 1st Stake');
-        console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
+    //     console.log('firstAddr 1st Stake');
+    //     console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][0];
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
+    //     let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
         
-        console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
-    })
+    //     console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
+    // })
 
-    it("firstAddr 2nd Stake difference ui vs contract", async () => {
-        await time.increase(time.duration.days(90));
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+    // it("firstAddr 2nd Stake difference ui vs contract", async () => {
+    //     await time.increase(time.duration.days(90));
+    //     const decimals = await firstToken.decimals();
+    //     const tokenbits = (new BN(10)).pow(decimals);
 
-        const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-        const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-        let poolEndTime = contractDeplTime + stakingDuration;
+    //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+    //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+    //     let poolEndTime = contractDeplTime + stakingDuration;
 
-        let firstUserStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeStartTime = Number(firstUserStakingDetails[3][1]);
+    //     let firstUserStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeStartTime = Number(firstUserStakingDetails[3][1]);
 
-        let poolData = await bRingFarming.pools(firstTokenAddress);
-        let totalStaked = Number(poolData.totalStaked);
-        let rewardRatePerTime = 0.000277;
-        let rewardWithoutMultiplier = (oneHundred * ( poolEndTime - stakeStartTime ) / totalStaked * rewardRatePerTime);
+    //     let poolData = await bRingFarming.pools(firstTokenAddress);
+    //     let totalStaked = Number(poolData.totalStaked);
+    //     let rewardRatePerTime = 0.000277;
+    //     let rewardWithoutMultiplier = (oneHundred * ( poolEndTime - stakeStartTime ) / totalStaked * rewardRatePerTime);
 
-        const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
-        const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-        const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+    //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+    //     const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+    //     const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
         
-        let multiplier = 1 + (maxMultiplier - 1) * stakingTime / stakingDuration;
+    //     let multiplier = 1 + (maxMultiplier - 1) * stakingTime / stakingDuration;
 
-        console.log('firstAddr 2nd Stake');
-        console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
+    //     console.log('firstAddr 2nd Stake');
+    //     console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
-        let stakeId = stakeDetails[0][1];
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+    //     let stakeId = stakeDetails[0][1];
 
-        let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
+    //     let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
         
-        console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
-    })
+    //     console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
+    // })
 
-    it("secondAddr difference ui vs contract", async () => {
-        await time.increase(time.duration.days(90));
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+    // it("secondAddr difference ui vs contract", async () => {
+    //     await time.increase(time.duration.days(90));
+    //     const decimals = await firstToken.decimals();
+    //     const tokenbits = (new BN(10)).pow(decimals);
 
-        const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-        const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-        let poolEndTime = contractDeplTime + stakingDuration;
+    //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+    //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+    //     let poolEndTime = contractDeplTime + stakingDuration;
 
-        let firstUserStakingDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
-        let stakeStartTime = Number(firstUserStakingDetails[3][0]);
+    //     let firstUserStakingDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+    //     let stakeStartTime = Number(firstUserStakingDetails[3][0]);
 
-        let poolData = await bRingFarming.pools(firstTokenAddress);
-        let totalStaked = Number(poolData.totalStaked);
-        let rewardRatePerTime = 0.000277;
-        let rewardWithoutMultiplier = oneHundredThousand * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
+    //     let poolData = await bRingFarming.pools(firstTokenAddress);
+    //     let totalStaked = Number(poolData.totalStaked);
+    //     let rewardRatePerTime = 0.000277;
+    //     let rewardWithoutMultiplier = oneHundredThousand * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
 
-        const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
-        const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-        const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+    //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+    //     const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+    //     const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
         
-        let multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
+    //     let multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
 
-        console.log('secondAddr');
-        console.log("ui", (rewardWithoutMultiplier * multiplier * 0.94) * tokenbits);
+    //     console.log('secondAddr');
+    //     console.log("ui", (rewardWithoutMultiplier * multiplier * 0.94) * tokenbits);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
-        let stakeId = stakeDetails[0][0];
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+    //     let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, { from: secondAddr });
+    //     let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, { from: secondAddr });
         
-        console.log("contract", (Number(stakeRew[0]) * 0.94) / tokenbits);
-    })
+    //     console.log("contract", (Number(stakeRew[0]) * 0.94) / tokenbits);
+    // })
 
-    it("fifthAddr difference ui vs contract", async () => {
-        await time.increase(time.duration.days(90));
-        const decimals = await firstToken.decimals();
-        const tokenbits = (new BN(10)).pow(decimals);
+    // it("fifthAddr difference ui vs contract", async () => {
+    //     await time.increase(time.duration.days(90));
+    //     const decimals = await firstToken.decimals();
+    //     const tokenbits = (new BN(10)).pow(decimals);
 
-        const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
-        const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
-        let poolEndTime = contractDeplTime + stakingDuration;
+    //     const contractDeplTime = Number(await bRingFarming.contractDeploymentTime({ from: deployer }));
+    //     const stakingDuration = Number(await bRingFarming.stakingDuration({ from: deployer }));
+    //     let poolEndTime = contractDeplTime + stakingDuration;
 
-        let firstUserStakingDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
-        let stakeStartTime = Number(firstUserStakingDetails[3][0]);
+    //     let firstUserStakingDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+    //     let stakeStartTime = Number(firstUserStakingDetails[3][0]);
 
-        let poolData = await bRingFarming.pools(firstTokenAddress);
-        let totalStaked = Number(poolData.totalStaked);
-        let rewardRatePerTime = 0.000277;
-        let rewardWithoutMultiplier = tenThousand * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
+    //     let poolData = await bRingFarming.pools(firstTokenAddress);
+    //     let totalStaked = Number(poolData.totalStaked);
+    //     let rewardRatePerTime = 0.000277;
+    //     let rewardWithoutMultiplier = tenThousand * (( poolEndTime - stakeStartTime ) / totalStaked) * rewardRatePerTime;
 
-        const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
-        const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
-        const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
+    //     const maxMultiplier = Number(await bRingFarming.stakeMultiplier());
+    //     const daysPassedBeforeStake = Math.floor((stakeStartTime - contractDeplTime) / 3600 / 24);
+    //     const stakingTime = poolEndTime - (contractDeplTime + (daysPassedBeforeStake * 24 * 3600));
         
-        let multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
+    //     let multiplier = 1 + ((maxMultiplier - 1) * stakingTime) / stakingDuration;
 
-        console.log('fifthAddr');
-        console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
+    //     console.log('fifthAddr');
+    //     console.log("ui", (rewardWithoutMultiplier * multiplier * 0.9) * tokenbits);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
-        let stakeId = stakeDetails[0][0];
+    //     let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+    //     let stakeId = stakeDetails[0][0];
 
-        let stakeRew = await bRingFarming.getStakeRewards(fifthAddr, stakeId, { from: fifthAddr });
+    //     let stakeRew = await bRingFarming.getStakeRewards(fifthAddr, stakeId, { from: fifthAddr });
         
-        console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
-    })
+    //     console.log("contract", (Number(stakeRew[0]) * 0.9) / tokenbits);
+    // })
 })

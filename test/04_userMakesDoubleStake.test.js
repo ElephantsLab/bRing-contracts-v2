@@ -45,6 +45,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
@@ -53,6 +56,7 @@ contract("user should be able to do two stakes in a row one by one", async accou
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0, 
             { from: deployer } )

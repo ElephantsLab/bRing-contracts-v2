@@ -43,6 +43,9 @@ contract("check zero totalStakeLimit param", async accounts => {
         let tokenRewards = [1, 1];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress], 
@@ -50,6 +53,7 @@ contract("check zero totalStakeLimit param", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0)
     })

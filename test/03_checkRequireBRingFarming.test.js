@@ -41,6 +41,9 @@ contract("check require statements of bRingFarming", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -55,6 +58,7 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0, 
             { from: deployer } );
@@ -92,6 +96,9 @@ contract("check require statements of bRingFarming", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -106,6 +113,7 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0, 
             { from: deployer } );
@@ -143,6 +151,9 @@ contract("check require statements of bRingFarming", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let minStakeAmount = 1;
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
@@ -157,6 +168,7 @@ contract("check require statements of bRingFarming", async accounts => {
                 (new BN(tokenRewards[1])).mul(tokenbits), 
                 (new BN(tokenRewards[2])).mul(tokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0, 
             { from: deployer } );

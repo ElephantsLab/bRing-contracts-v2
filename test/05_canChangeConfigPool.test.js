@@ -47,10 +47,14 @@ contract("owner should be able change config pool", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(maxStakeAmount)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
             [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0)
     })
@@ -97,10 +101,16 @@ contract("owner should be able change config pool", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         await bRingFarming.configPool(firstTokenAddress, (new BN(minStakeAmount)).mul(tokenbits), 
             (new BN(secondStakeAmount / 2)).mul(tokenbits), (new BN(totalStakeLimit)).mul(tokenbits),
             [firstTokenAddress, secondTokenAddress, thirdTokenAddress], 
-            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)])
+            [(new BN(tokenRewards[0])).mul(tokenbits), (new BN(tokenRewards[1])).mul(tokenbits), (new BN(tokenRewards[2])).mul(tokenbits)],
+            maxPenalty, penaltyDuration, deployer,
+            constants.ZERO_ADDRESS,
+            0)
     })
 
     it("should revert stake than bigger maxStakeAmount", async () => {

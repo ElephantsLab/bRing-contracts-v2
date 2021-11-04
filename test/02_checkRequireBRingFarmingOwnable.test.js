@@ -44,14 +44,14 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         );
     })
 
-    it("should revert invalid 'stakeMultiplier' param in func 'changeStakeMultiplier'", async () => {
-        const invalidStakingDuration = new BN(0);
+    // it("should revert invalid 'stakeMultiplier' param in func 'changeStakeMultiplier'", async () => {
+    //     const invalidStakingDuration = new BN(0);
 
-        await expectRevert(
-            bRingFarming.changeStakeMultiplier(invalidStakingDuration, { from: deployer }),
-            'Invalid multiplier value'
-        );
-    })
+    //     await expectRevert(
+    //         bRingFarming.changeStakeMultiplier(invalidStakingDuration, { from: deployer }),
+    //         'Invalid multiplier value'
+    //     );
+    // })
 
     it("should revert invalid 'referralPercents' param in func 'changeReferralPercents'", async () => {
         const invalidReferralPercents = [];
@@ -70,6 +70,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
@@ -82,6 +85,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid token contract address'
@@ -96,6 +100,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
@@ -108,6 +115,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
@@ -122,6 +130,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
@@ -136,6 +145,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid min or max stake amounts values'
@@ -147,6 +157,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 500000; // 500000
         let tokenRewards = [1, 2, 3];
+
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
 
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
@@ -160,6 +173,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid total stake limit value'
@@ -171,6 +185,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let maxStakeAmount = 500000; // 500 000
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
+
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
 
         const decimals = await firstToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
@@ -184,6 +201,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                     (new BN(tokenRewards[1])).mul(tokenbits), 
                     (new BN(tokenRewards[2])).mul(tokenbits)
                 ],
+                maxPenalty, penaltyDuration, deployer,
                 constants.ZERO_ADDRESS,
                 0, { from: deployer } ),
                 'Invalid configuration data'
@@ -196,6 +214,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let totalStakeLimit = 1000000; // 1 000 000
         let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
 
         let stakeAmount = 1000;
 
@@ -210,6 +231,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0);
 
@@ -266,6 +288,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let stakeAmount = 1000;
 
         const decimals = await firstToken.decimals();
@@ -278,7 +303,10 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[0])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
-            ]);
+            ],
+            maxPenalty, penaltyDuration, deployer,
+            constants.ZERO_ADDRESS,
+            0);
 
         let tokenContractBalance;
         let tokensNames = [firstToken, secondToken, thirdToken];
@@ -335,6 +363,9 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
         let tokenRewards = [1, 2, 3];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
 
+        const maxPenalty = new BN(0);
+        const penaltyDuration = 45 * 24 * 3600;
+
         let stakeAmount = 1000;
 
         const decimals = await firstToken.decimals();
@@ -348,6 +379,7 @@ contract("check require statements of bRingFarmingOwnable", async accounts => {
                 (new BN(tokenRewards[1])).mul(rewardsTokenbits), 
                 (new BN(tokenRewards[2])).mul(rewardsTokenbits)
             ],
+            maxPenalty, penaltyDuration, deployer,
             constants.ZERO_ADDRESS,
             0);
 

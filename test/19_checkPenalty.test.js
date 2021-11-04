@@ -112,6 +112,7 @@ contract("check penalty logic", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
         let tokenRewards = [1];
         const rewardsTokenbits = (new BN(10)).pow(new BN(15));
+
         const maxPenalty = new BN(0);
         const penaltyDuration = 45 * 24 * 3600;
 
