@@ -43,11 +43,9 @@ contract BRingFarming is BRingFarmingOwnable {
     _stake.stakeTime = block.timestamp;
 
     // Update pool data
-    for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
+    pool.rewardAccPerShare = getRewardAccumulatedPerShare(pool);
 
-      _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
-    }
+    _stake.stakeAcc = pool.rewardAccPerShare;
 
     pool.totalStaked+= amount;
     pool.lastOperationTime = block.timestamp;
@@ -107,23 +105,20 @@ contract BRingFarming is BRingFarmingOwnable {
   }
 
   function distributeReward(address userAddress, StakeData storage _stake, Pool storage pool, bool updateStakeAccs) private {
+    pool.rewardAccPerShare = getRewardAccumulatedPerShare(pool);
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
-
       uint256 reward = _stake.amount
-        * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
+        * (pool.rewardAccPerShare - _stake.stakeAcc)
+        * pool.rewardRates[i]
         / ACC_PRECISION;
 
       uint256 userReward = _stake.amount
-        * (pool.rewardsAccPerShare[i] - _stake.stakeAcc[i])
+        * (pool.rewardAccPerShare - _stake.stakeAcc)
+        * pool.rewardRates[i]
         * (100 * PENALTY_PRECISION - getPenaltyPercent(pool))
         / 100
         / PENALTY_PRECISION
         / ACC_PRECISION;
-
-      if (updateStakeAccs) {
-        _stake.stakeAcc[i] = pool.rewardsAccPerShare[i];
-      }
 
       // Transfer reward and pay referral reward
       if (users[userAddress].referrer == address(0x0)) {
@@ -168,20 +163,24 @@ contract BRingFarming is BRingFarmingOwnable {
         }
       }
     }
+
+    if (updateStakeAccs) {
+      _stake.stakeAcc = pool.rewardAccPerShare;
+    }
   }
 
-  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) override internal view returns (uint256) {
+  function getRewardAccumulatedPerShare(Pool memory pool) override internal view returns (uint256) {
     uint256 actualTime = block.timestamp;
     if (actualTime > contractDeploymentTime + stakingDuration) {
       actualTime = contractDeploymentTime + stakingDuration;
     }
 
     if (actualTime <= pool.lastOperationTime || pool.totalStaked == 0) {
-      return pool.rewardsAccPerShare[farmingSequenceIdx];
+      return pool.rewardAccPerShare;
     }
 
-    return pool.rewardsAccPerShare[farmingSequenceIdx]
-        + ACC_PRECISION * (actualTime - pool.lastOperationTime) * pool.rewardRates[farmingSequenceIdx] / pool.totalStaked;
+    return pool.rewardAccPerShare
+        + ACC_PRECISION * (actualTime - pool.lastOperationTime) / pool.totalStaked;
   }
 
   function getStakeRewards(address userAddress, uint256 stakeIdx, bool afterPenalty) external view returns (uint256[10] memory rewards) {
@@ -193,7 +192,8 @@ contract BRingFarming is BRingFarmingOwnable {
     }
 
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      rewards[i] = (getRewardAccumulatedPerShare(pool, i) - _stake.stakeAcc[i])
+      rewards[i] = (getRewardAccumulatedPerShare(pool) - _stake.stakeAcc)
+        * pool.rewardRates[i]
         * _stake.amount
         / ACC_PRECISION;
 
