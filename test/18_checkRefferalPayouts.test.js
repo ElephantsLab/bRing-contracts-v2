@@ -151,7 +151,7 @@ contract("check reward with different referral levels and without referrer", asy
         console.log("1 user bal payouts", firstUserBalance);
         console.log("--------");
 
-        assert.equal(expectedFirstLineRefPayouts, firstUserBalance, "referral payouts is wrong"); 
+        assert.equal(expectedFirstLineRefPayouts.toFixed(4), firstUserBalance.toFixed(4), "referral payouts is wrong"); 
     })
 
     it("third user make unstake & first and second users get ref payouts", async () => {
@@ -187,8 +187,8 @@ contract("check reward with different referral levels and without referrer", asy
         console.log("2 user bal payouts", secondUserBalance);
         console.log("--------");
 
-        assert.equal(expectedFirstLineRefPayouts + expectedSecondLineRefPayouts, firstUserBalance, "referral payouts is wrong (firstAddr)"); 
-        assert.equal(expectedFirstLineRefPayouts, secondUserBalance, "referral payouts is wrong (secondAddr)");    
+        assert.equal((expectedFirstLineRefPayouts + expectedSecondLineRefPayouts).toFixed(3), firstUserBalance.toFixed(3), "referral payouts is wrong (firstAddr)"); 
+        assert.equal(expectedFirstLineRefPayouts.toFixed(3), secondUserBalance.toFixed(3), "referral payouts is wrong (secondAddr)");    
     })
 
     it("fourth user make unstake & first, second and third users get ref payouts", async () => {
@@ -230,9 +230,9 @@ contract("check reward with different referral levels and without referrer", asy
         console.log("3 user bal payouts", thirdUserBalance);
         console.log("--------");
 
-        assert.equal(expectedFirstLineRefPayouts + expectedSecondLineRefPayouts + expectedThirdLineRefPayouts, 
-            firstUserBalance, "referral payouts is wrong (firstAddr)");
-        assert.equal(expectedFirstLineRefPayouts + expectedSecondLineRefPayouts, secondUserBalance, "referral payouts is wrong (secondAddr)");
-        assert.equal(expectedFirstLineRefPayouts, thirdUserBalance, "referral payouts is wrong (thirdAddr)");      
+        assert.equal((expectedFirstLineRefPayouts + expectedSecondLineRefPayouts + expectedThirdLineRefPayouts).toFixed(3), 
+            firstUserBalance.toFixed(3), "referral payouts is wrong (firstAddr)");
+        assert.equal((expectedFirstLineRefPayouts + expectedSecondLineRefPayouts).toFixed(3), secondUserBalance.toFixed(3), "referral payouts is wrong (secondAddr)");
+        assert.equal(expectedFirstLineRefPayouts.toFixed(3), thirdUserBalance.toFixed(3), "referral payouts is wrong (thirdAddr)");      
     })
 })

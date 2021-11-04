@@ -120,74 +120,86 @@ contract("check stake reward distribution without referrer", async accounts => {
     it("first user unstake and get his reward after 90 days", async () => {
         await time.increase(time.duration.days(90));
 
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
         let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: firstAddr });
 
-        firstUserBalance1Token = Number(await firstToken.balanceOf(firstAddr, { from: firstAddr }));
-        firstUserBalance2Token = Number(await secondToken.balanceOf(firstAddr, { from: firstAddr }));
-        firstUserBalance3Token = Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr }));
+        firstUserBalance1Token = Number(await firstToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
+        firstUserBalance2Token = Number(await secondToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
+        firstUserBalance3Token = Number(await thirdToken.balanceOf(firstAddr, { from: firstAddr })) / tokenbits;
 
-        console.log(firstUserBalance1Token);
-        console.log(firstUserBalance2Token);
-        console.log(firstUserBalance3Token);
+        console.log(firstUserBalance1Token / tokenbits);
+        console.log(firstUserBalance2Token / tokenbits);
+        console.log(firstUserBalance3Token / tokenbits);
     })
 
     it("second user unstake and get his reward after 90 days", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
         let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: secondAddr });
 
-        secondUserBalance1Token = Number(await firstToken.balanceOf(secondAddr, { from: secondAddr }));
-        secondUserBalance2Token = Number(await secondToken.balanceOf(secondAddr, { from: secondAddr }));
-        secondUserBalance3Token = Number(await thirdToken.balanceOf(secondAddr, { from: secondAddr }));
+        secondUserBalance1Token = Number(await firstToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits;
+        secondUserBalance2Token = Number(await secondToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits;
+        secondUserBalance3Token = Number(await thirdToken.balanceOf(secondAddr, { from: secondAddr })) / tokenbits;
 
-        console.log(secondUserBalance1Token);
-        console.log(secondUserBalance2Token);
-        console.log(secondUserBalance3Token);
+        console.log(secondUserBalance1Token / tokenbits);
+        console.log(secondUserBalance2Token / tokenbits);
+        console.log(secondUserBalance3Token / tokenbits);
 
-        assert.equal(secondUserBalance1Token, firstUserBalance1Token, "second user first token reward is wrong");
-        assert.equal(secondUserBalance2Token, firstUserBalance2Token, "second user second token reward is wrong");
-        assert.equal(secondUserBalance3Token, firstUserBalance3Token, "second user third token reward is wrong");
+        assert.equal(secondUserBalance1Token.toFixed(2), firstUserBalance1Token.toFixed(2), "second user first token reward is wrong");
+        assert.equal(secondUserBalance2Token.toFixed(2), firstUserBalance2Token.toFixed(2), "second user second token reward is wrong");
+        assert.equal(secondUserBalance3Token.toFixed(2), firstUserBalance3Token.toFixed(2), "second user third token reward is wrong");
     })
 
     it("third user unstake and get his reward after 90 days", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
         let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, { from: thirdAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: thirdAddr });
 
-        thirdUserBalance1Token = Number(await firstToken.balanceOf(thirdAddr, { from: thirdAddr }));
-        thirdUserBalance2Token = Number(await secondToken.balanceOf(thirdAddr, { from: thirdAddr }));
-        thirdUserBalance3Token = Number(await thirdToken.balanceOf(thirdAddr, { from: thirdAddr }));
+        thirdUserBalance1Token = Number(await firstToken.balanceOf(thirdAddr, { from: thirdAddr })) / tokenbits;
+        thirdUserBalance2Token = Number(await secondToken.balanceOf(thirdAddr, { from: thirdAddr })) / tokenbits;
+        thirdUserBalance3Token = Number(await thirdToken.balanceOf(thirdAddr, { from: thirdAddr })) / tokenbits;
 
-        console.log(thirdUserBalance1Token);
-        console.log(thirdUserBalance2Token);
-        console.log(thirdUserBalance3Token);
+        console.log(thirdUserBalance1Token / tokenbits);
+        console.log(thirdUserBalance2Token / tokenbits);
+        console.log(thirdUserBalance3Token / tokenbits);
 
-        assert.equal(thirdUserBalance1Token, secondUserBalance1Token, "third user first token reward is wrong");
-        assert.equal(thirdUserBalance2Token, secondUserBalance2Token, "third user second token reward is wrong");
-        assert.equal(thirdUserBalance3Token, secondUserBalance3Token, "third user third token reward is wrong");
+        assert.equal(thirdUserBalance1Token.toFixed(2), secondUserBalance1Token.toFixed(2), "third user first token reward is wrong");
+        assert.equal(thirdUserBalance2Token.toFixed(2), secondUserBalance2Token.toFixed(2), "third user second token reward is wrong");
+        assert.equal(thirdUserBalance3Token.toFixed(2), secondUserBalance3Token.toFixed(2), "third user third token reward is wrong");
     })
 
     it("fourth user unstake and get his reward after 90 days", async () => {
+        const decimals = await firstToken.decimals();
+        const tokenbits = (new BN(10)).pow(decimals);
+
         let stakeDetails = await bRingFarming.viewStakingDetails(fourthAddr, { from: fourthAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: fourthAddr });
 
-        fourthUserBalance1Token = Number(await firstToken.balanceOf(fourthAddr, { from: fourthAddr }));
-        fourthUserBalance2Token = Number(await secondToken.balanceOf(fourthAddr, { from: fourthAddr }));
-        fourthUserBalance3Token = Number(await thirdToken.balanceOf(fourthAddr, { from: fourthAddr }));
+        fourthUserBalance1Token = Number(await firstToken.balanceOf(fourthAddr, { from: fourthAddr })) / tokenbits;
+        fourthUserBalance2Token = Number(await secondToken.balanceOf(fourthAddr, { from: fourthAddr })) / tokenbits;
+        fourthUserBalance3Token = Number(await thirdToken.balanceOf(fourthAddr, { from: fourthAddr })) / tokenbits;
 
-        console.log(fourthUserBalance1Token);
-        console.log(fourthUserBalance2Token);
-        console.log(fourthUserBalance3Token);
+        console.log(fourthUserBalance1Token / tokenbits);
+        console.log(fourthUserBalance2Token / tokenbits);
+        console.log(fourthUserBalance3Token / tokenbits);
 
-        assert.equal(fourthUserBalance1Token, thirdUserBalance1Token, "fourth user first token reward is wrong");
-        assert.equal(fourthUserBalance2Token, thirdUserBalance2Token, "fourth user second token reward is wrong");
-        assert.equal(fourthUserBalance3Token, thirdUserBalance3Token, "fourth user third token reward is wrong");
+        assert.equal(fourthUserBalance1Token.toFixed(2), thirdUserBalance1Token.toFixed(2), "fourth user first token reward is wrong");
+        assert.equal(fourthUserBalance2Token.toFixed(2), thirdUserBalance2Token.toFixed(2), "fourth user second token reward is wrong");
+        assert.equal(fourthUserBalance3Token.toFixed(1), thirdUserBalance3Token.toFixed(1), "fourth user third token reward is wrong");
     })
 })

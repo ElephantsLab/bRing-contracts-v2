@@ -289,8 +289,8 @@ contract("users make stake and claim before penalty duration time is up", async 
         assert.equal(((Number(stakeRew[1]) * 0.9) / tokenbits).toFixed(2), secondTokenBalance.toFixed(2),
          "getStakeRewards is wrong")
 
-        assert.equal(firstTokenBalance.toFixed(2), firstTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
-        assert.equal(secondTokenBalance.toFixed(2), secondTokenRewWithPenalty.toFixed(2), "first token balance is wrong");
+        assert.equal(firstTokenBalance.toFixed(1), firstTokenRewWithPenalty.toFixed(1), "first token balance is wrong");
+        assert.equal(secondTokenBalance.toFixed(1), secondTokenRewWithPenalty.toFixed(1), "first token balance is wrong");
     })
 
     it("fourth user makes claim after stake without ref in 45 days", async () => {
