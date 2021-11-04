@@ -14,7 +14,7 @@ struct Pool {
   address[] farmingSequence;
   uint256[] rewardRates;
 
-  uint256[10] rewardsAccPerShare;
+  uint256 rewardAccPerShare;
   uint256 lastOperationTime;
   uint256 totalStaked;
 
@@ -36,7 +36,7 @@ struct StakeData {
   uint256 idx;
   address stakedTokenAddress;
   uint256 amount;
-  uint256[10] stakeAcc;
+  uint256 stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
 }
@@ -212,9 +212,8 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     // Update stake
     _stake.unstakeTime = block.timestamp;
 
+    pool.rewardAccPerShare = getRewardAccumulatedPerShare(pool);
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
-
       if (rewards[i] == 0) {
         continue;
       }
@@ -283,6 +282,6 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     _unpause();
   }
 
-  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) virtual internal view returns (uint256);
+  function getRewardAccumulatedPerShare(Pool memory pool) virtual internal view returns (uint256);
   
 }
