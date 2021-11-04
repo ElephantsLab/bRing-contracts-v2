@@ -2,10 +2,10 @@
 
 pragma solidity >=0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./BRingFarmingOwnable.sol";
 
 contract BRingFarming is BRingFarmingOwnable {
+  using SafeERC20 for IERC20;
 
   uint256 private constant ACC_PRECISION = 1e12;
   uint256 private constant PENALTY_PRECISION = 1e12;
@@ -33,10 +33,7 @@ contract BRingFarming is BRingFarmingOwnable {
     }
 
     // Transfer staked tokens from the user address
-    require(
-      IERC20(stakedTokenAddress).transferFrom(msg.sender, address(this), amount),
-      "Tokens stake deposit error"
-    );
+    IERC20(stakedTokenAddress).safeTransferFrom(msg.sender, address(this), amount);
 
     // Create stake
     StakeData memory _stake;
@@ -73,7 +70,7 @@ contract BRingFarming is BRingFarmingOwnable {
     distributeReward(userAddress, _stake, pool, false);
 
     // Return stake
-    IERC20(_stake.stakedTokenAddress).transfer(userAddress, _stake.amount);
+    IERC20(_stake.stakedTokenAddress).safeTransfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
     pool.lastOperationTime = block.timestamp;
@@ -130,15 +127,15 @@ contract BRingFarming is BRingFarmingOwnable {
 
       // Transfer reward and pay referral reward
       if (users[userAddress].referrer == address(0x0)) {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, userReward * 90 / 100);
+        IERC20(pool.farmingSequence[i]).safeTransfer(userAddress, userReward * 90 / 100);
         if (reward > userReward) {
-          IERC20(pool.farmingSequence[i]).transfer(pool.penaltyReceiver, (reward - userReward) * 90 / 100);
+          IERC20(pool.farmingSequence[i]).safeTransfer(pool.penaltyReceiver, (reward - userReward) * 90 / 100);
         }
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 90 / 100, block.timestamp);
       } else {
-        IERC20(pool.farmingSequence[i]).transfer(userAddress, userReward * 94 / 100);
+        IERC20(pool.farmingSequence[i]).safeTransfer(userAddress, userReward * 94 / 100);
         if (reward > userReward) {
-          IERC20(pool.farmingSequence[i]).transfer(pool.penaltyReceiver, (reward - userReward) * 94 / 100);
+          IERC20(pool.farmingSequence[i]).safeTransfer(pool.penaltyReceiver, (reward - userReward) * 94 / 100);
         }
         emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 94 / 100, block.timestamp);
 
@@ -156,7 +153,7 @@ contract BRingFarming is BRingFarmingOwnable {
             refReward = reward * referralPercents[j] * pool.referralMultiplier / 10**REFERRAL_MULTIPLIER_DECIMALS / 100;
           }
 
-          IERC20(refTokenAddress).transfer(ref, refReward);
+          IERC20(refTokenAddress).safeTransfer(ref, refReward);
           emit ReferralPayout(
             ref,
             userAddress,
