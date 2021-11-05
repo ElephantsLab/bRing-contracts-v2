@@ -7,7 +7,7 @@ import "./BRingFarmingOwnable.sol";
 contract BRingFarming is BRingFarmingOwnable {
   using SafeERC20 for IERC20;
 
-  uint256 private constant ACC_PRECISION = 1e12;
+  uint256 private constant ACC_PRECISION = 1e24;
   uint256 private constant PENALTY_PRECISION = 1e12;
 
   function stake(address referrer, address stakedTokenAddress, uint256 amount) external whenNotPaused {
