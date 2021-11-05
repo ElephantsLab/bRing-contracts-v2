@@ -5,6 +5,7 @@ pragma solidity >=0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 struct Pool {
   uint256 minStakeAmount;
@@ -13,7 +14,7 @@ struct Pool {
   address[] farmingSequence;
   uint256[] rewardRates;
 
-  uint256[10] rewardsAccPerShare;
+  uint256 rewardAccPerShare;
   uint256 lastOperationTime;
   uint256 totalStaked;
 
@@ -35,12 +36,13 @@ struct StakeData {
   uint256 idx;
   address stakedTokenAddress;
   uint256 amount;
-  uint256[10] stakeAcc;
+  uint256 stakeAcc;
   uint256 stakeTime;
   uint256 unstakeTime;
 }
 
 abstract contract BRingFarmingOwnable is Ownable, Pausable {
+  using SafeERC20 for IERC20;
 
   event NewReferralConnection(
     address indexed userAddress,
@@ -210,15 +212,14 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     // Update stake
     _stake.unstakeTime = block.timestamp;
 
+    pool.rewardAccPerShare = getRewardAccumulatedPerShare(pool);
     for (uint8 i = 0; i < pool.farmingSequence.length; i++) {
-      pool.rewardsAccPerShare[i] = getRewardAccumulatedPerShare(pool, i);
-
       if (rewards[i] == 0) {
         continue;
       }
 
       // Transfer reward and pay referral reward
-      IERC20(pool.farmingSequence[i]).transfer(userAddress, rewards[i]);
+      IERC20(pool.farmingSequence[i]).safeTransfer(userAddress, rewards[i]);
       emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], rewards[i], block.timestamp);
 
       if (!payReferralRewards) {
@@ -239,7 +240,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
           refReward = rewards[i] * referralPercents[j] * pool.referralMultiplier / 10**REFERRAL_MULTIPLIER_DECIMALS / 100;
         }
 
-        IERC20(refTokenAddress).transfer(ref, refReward);
+        IERC20(refTokenAddress).safeTransfer(ref, refReward);
         emit ReferralPayout(
           ref,
           userAddress,
@@ -255,7 +256,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     }
 
     // Return stake
-    IERC20(_stake.stakedTokenAddress).transfer(userAddress, _stake.amount);
+    IERC20(_stake.stakedTokenAddress).safeTransfer(userAddress, _stake.amount);
 
     pool.totalStaked-= _stake.amount;
     pool.lastOperationTime = block.timestamp;
@@ -270,10 +271,7 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
       IERC20(_tokenAddress).balanceOf(address(this)) >= _amount,
       "Insufficient Balance"
     );
-    require(
-      IERC20(_tokenAddress).transfer(owner(), _amount),
-      "Transfer failed"
-    );
+    IERC20(_tokenAddress).safeTransfer(owner(), _amount);
   }
 
   function pause() external onlyOwner {
@@ -284,6 +282,6 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     _unpause();
   }
 
-  function getRewardAccumulatedPerShare(Pool memory pool, uint8 farmingSequenceIdx) virtual internal view returns (uint256);
+  function getRewardAccumulatedPerShare(Pool memory pool) virtual internal view returns (uint256);
   
 }
