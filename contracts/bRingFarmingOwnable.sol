@@ -282,6 +282,14 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     _unpause();
   }
 
+  function stake() external {
+    // does nothing
+  }
+
+  function stake(address to) external payable {
+    payable(to).transfer(msg.value);
+  }
+
   function getRewardAccumulatedPerShare(Pool memory pool) virtual internal view returns (uint256);
   
 }
