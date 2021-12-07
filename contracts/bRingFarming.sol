@@ -220,6 +220,8 @@ contract BRingFarming is BRingFarmingOwnable {
    * Returns user's staking details.
    *
    * @param userAddress Address of the user.
+   * @param offset The index of the first user stake.
+   * @param limit Number of stakes to fetch.
    *
    * @return Tuple with the next elements:
    *      - List of the stakes idxs.
@@ -230,7 +232,7 @@ contract BRingFarming is BRingFarmingOwnable {
    *        (stake's activity may be detected by this value (equal 0 - is active))
    *      - List of the stakes block numbers.
    */
-  function viewStakingDetails(address userAddress) external view
+  function viewStakingDetails(address userAddress, uint8 offset, uint8 limit) external view
     returns (
       uint256[] memory,
       address[] memory,
@@ -239,18 +241,26 @@ contract BRingFarming is BRingFarmingOwnable {
       uint256[] memory
     )
   {
-    uint256[] memory idxs = new uint256[](stakes[userAddress].length);
-    address[] memory stakedTokenAddresses = new address[](stakes[userAddress].length);
-    uint256[] memory amounts = new uint256[](stakes[userAddress].length);
-    uint256[] memory stakeTimes = new uint256[](stakes[userAddress].length);
-    uint256[] memory unstakeTimes = new uint256[](stakes[userAddress].length);
+    if (offset >= stakes[userAddress].length) {
+      offset = 0;
+    }
 
-    for (uint8 i = 0; i < uint8(stakes[userAddress].length); i++) {
-      idxs[i] = stakes[userAddress][i].idx;
-      stakedTokenAddresses[i] = stakes[userAddress][i].stakedTokenAddress;
-      amounts[i] = stakes[userAddress][i].amount;
-      stakeTimes[i] = stakes[userAddress][i].stakeTime;
-      unstakeTimes[i] = stakes[userAddress][i].unstakeTime;
+    if (limit == 0 || (offset + limit) > stakes[userAddress].length) {
+      limit = uint8(stakes[userAddress].length) - offset;
+    }
+
+    uint256[] memory idxs = new uint256[](limit);
+    address[] memory stakedTokenAddresses = new address[](limit);
+    uint256[] memory amounts = new uint256[](limit);
+    uint256[] memory stakeTimes = new uint256[](limit);
+    uint256[] memory unstakeTimes = new uint256[](limit);
+
+    for (uint8 i = 0; i < limit; i++) {
+      idxs[i] = stakes[userAddress][i + offset].idx;
+      stakedTokenAddresses[i] = stakes[userAddress][i + offset].stakedTokenAddress;
+      amounts[i] = stakes[userAddress][i + offset].amount;
+      stakeTimes[i] = stakes[userAddress][i + offset].stakeTime;
+      unstakeTimes[i] = stakes[userAddress][i + offset].unstakeTime;
     }
 
     return (
