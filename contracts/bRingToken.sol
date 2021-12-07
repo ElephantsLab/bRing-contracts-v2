@@ -14,7 +14,7 @@ contract BRingToken is ERC20 {
     _mint(INITIAL_SUPPLY_ADDRESS, initialSupply * (10 ** uint256(decimals())));
   }
 
-  function batchTransfer(address[] memory addresses, uint256[] memory amounts) public {
+  function batchTransfer(address[] memory addresses, uint256[] memory amounts) external {
     for (uint256 i = 0; i < addresses.length; i++) {
       transfer(addresses[i], amounts[i]);
     }

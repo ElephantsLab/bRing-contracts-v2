@@ -163,7 +163,8 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     require(stakedTokenAddress != address(0x0), "Invalid token contract address");
     require(minStakeAmount > 0 && minStakeAmount < maxStakeAmount, "Invalid min or max stake amounts values");
     require(maxStakeAmount < totalStakeLimit || totalStakeLimit == 0, "Invalid total stake limit value");
-    require(farmingSequence.length > 0 && farmingSequence.length == rewardRates.length, "Invalid configuration data");
+    require(farmingSequence.length > 0 && farmingSequence.length <= 10, "Invalid farming sequence list size");
+    require(farmingSequence.length == rewardRates.length, "Invalid configuration data");
     require(maxPenalty < 100, "Invalid max penalty percent");
     require(penaltyDuration <= stakingDuration, "Invalid penalty duration");
     require(penaltyReceiver != address(0x0), "Invalid penalty receiver address");
