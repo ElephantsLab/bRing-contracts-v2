@@ -87,9 +87,9 @@ contract("users make stake and claim before penalty duration time is up", async 
 
         for(let i = 0; i < users.length; i++) {          
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -105,7 +105,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let users = [firstAddr, secondAddr, thirdAddr, fourthAddr];
         let stakeDetails, stakeId, stakeRew, stakeReward;
         for(let i = 0; i < users.length; i++) {
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
             stakeId = stakeDetails[0][0];
 
             stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
@@ -124,7 +124,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails, stakeId, stakeRew, stakeReward;
         
         for(let i = 0; i < users.length; i++) {
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
             stakeId = stakeDetails[0][0];
 
             stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, true, { from: users[i] });
@@ -144,7 +144,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails, stakeId, stakeRew, stakeReward;
         
         for(let i = 0; i < users.length; i++) {
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
             stakeId = stakeDetails[0][0];
 
             stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
@@ -159,9 +159,9 @@ contract("users make stake and claim before penalty duration time is up", async 
         const tokenbits = (new BN(10)).pow(decimals);
         
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: fifthAddr });
-        await bRingFarming.stake(fifthAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: fifthAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](fifthAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: fifthAddr });
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, 0, 0, { from: fifthAddr });
 
         assert.equal(stakeDetails[0].length, 1, `user number of stake is wrong`);
         assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `user stake amount is wrong`);
@@ -178,14 +178,14 @@ contract("users make stake and claim before penalty duration time is up", async 
         let stakeDetails, stakeId, stakeRew, stakeReward;
 
         for(let i = 0; i < users.length; i++) {
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
             stakeId = stakeDetails[0][0];
 
             stakeRew = await bRingFarming.getStakeRewards(users[i], stakeId, false, { from: users[i] });
             stakeReward = (Number(stakeRew[0]) * 0.9) / tokenbits;
         }
 
-        let fifthUserStakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+        let fifthUserStakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, 0, 0, { from: fifthAddr });
         let fifthUserStakeId = fifthUserStakeDetails[0][0];
 
         let fifthUserStakeRew = await bRingFarming.getStakeRewards(fifthAddr, fifthUserStakeId, true, { from: fifthAddr });

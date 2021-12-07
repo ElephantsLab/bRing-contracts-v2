@@ -94,9 +94,9 @@ contract("user should be able claim reward without unstake", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
 
         await secondToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
-        await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, 0, 0, { from: secondAddr });
         assert.equal(stakeDetails[0].length, 1, "second user stake amount is wrong");
     })
 
@@ -105,16 +105,16 @@ contract("user should be able claim reward without unstake", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
 
         await secondToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, secondTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "first user stake amount is wrong");
     })
 
     it("user should be able view stake reward", async () => {
         await time.increase(time.duration.days(1));
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
@@ -130,7 +130,7 @@ contract("user should be able claim reward without unstake", async accounts => {
     })
 
     it("user should be able claim reward without unstake", async () => {
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });

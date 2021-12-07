@@ -90,9 +90,9 @@ contract("owner should be able change config pool", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(firstStakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(firstStakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(firstStakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
@@ -120,7 +120,7 @@ contract("owner should be able change config pool", async accounts => {
         await firstToken.approve(bRingFarmingAddress, (new BN(secondStakeAmount)).mul(tokenbits), { from: firstAddr });
 
         await expectRevert(
-            bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(secondStakeAmount)).mul(tokenbits), { from: firstAddr }),
+            bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(secondStakeAmount)).mul(tokenbits), { from: firstAddr }),
             'Invalid stake amount value'
         );
     })

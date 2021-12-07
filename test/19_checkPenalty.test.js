@@ -135,9 +135,9 @@ contract("check penalty logic", async accounts => {
         assert.equal(userBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), `user tokens balance is wrong`);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
 
         assert.equal(stakeDetails[0].length, 1, `user number of stake is wrong`);
         assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `user stake amount is wrong`);
@@ -148,7 +148,7 @@ contract("check penalty logic", async accounts => {
         let penaltyInfo = await bRingFarming.getPoolPenaltyInfo(firstTokenAddress, { from: firstAddr });
         assert.equal(Number(penaltyInfo.penaltyPercent), 0, "penalty percent is wrong");
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
@@ -194,9 +194,9 @@ contract("check penalty logic", async accounts => {
         assert.equal(userBalance.valueOf(), Number((new BN(stakeAmount)).mul(tokenbits)), `user tokens balance is wrong`);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
 
         assert.equal(stakeDetails[0].length, 1, `user number of stake is wrong`);
         assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `user stake amount is wrong`);
@@ -204,7 +204,7 @@ contract("check penalty logic", async accounts => {
         let timesPassed = 1;
         await time.increase(time.duration.hours(timesPassed));
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });

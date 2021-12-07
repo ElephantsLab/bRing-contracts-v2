@@ -92,9 +92,9 @@ describe("compare calculations with the withdrawal of one user stake at the midd
                 await time.increase(time.duration.hours(1));
                 
                 await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-                await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+                await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
     
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+                stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
     
                 assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
                 assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -108,7 +108,7 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             // const decimals = await firstToken.decimals();
             // const tokenbits = (new BN(10)).pow(decimals);
 
-            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
             let stakeId = stakeDetails[0][0];
 
             await bRingFarming.unstake(stakeId, { from: firstAddr });
@@ -257,9 +257,9 @@ describe("compare calculations with the withdrawal of one user stake at the midd
                 await time.increase(time.duration.hours(1));
                 
                 await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-                await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+                await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
     
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+                stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
     
                 assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
                 assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -273,7 +273,7 @@ describe("compare calculations with the withdrawal of one user stake at the midd
             // const decimals = await firstToken.decimals();
             // const tokenbits = (new BN(10)).pow(decimals);
 
-            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
             let stakeId = stakeDetails[0][0];
 
             await bRingFarming.claimReward(stakeId, { from: firstAddr });

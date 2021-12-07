@@ -92,9 +92,9 @@ describe("compare calculations with the withdrawal of stakes at the same time", 
                 await time.increase(time.duration.hours(1));
                 
                 await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-                await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+                await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
     
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+                stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
     
                 assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
                 assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -253,9 +253,9 @@ describe("compare calculations with the withdrawal of stakes at the same time", 
                 await time.increase(time.duration.hours(1));
                 
                 await firstToken.approve(bRingFarmingAddress, (new BN(usersStakeAmount[i])).mul(tokenbits), { from: users[i] });
-                await bRingFarming.stake(users[i], firstTokenAddress, (new BN(usersStakeAmount[i])).mul(tokenbits), { from: users[i] });
+                await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(usersStakeAmount[i])).mul(tokenbits), { from: users[i] });
     
-                stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+                stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
     
                 assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
                 assert.equal(Number(stakeDetails[2]), Number((new BN(usersStakeAmount[i])).mul(tokenbits)), `${users[i]} user stake amount is wrong`);

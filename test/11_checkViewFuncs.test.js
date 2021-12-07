@@ -105,9 +105,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
 
         assert.equal(stakeDetails[0].length, 1, "firstAddr user number of stake is wrong");
         assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), "firstAddr user stake amount is wrong");
@@ -122,9 +122,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
 
         for(let i = 1; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -134,7 +134,7 @@ contract("user should be able to do two stakes in a row one by one", async accou
     it("firstAddr user make UNSTAKE", async () => {
         await time.increase(time.duration.minutes(10));
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: firstAddr });

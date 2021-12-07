@@ -90,9 +90,9 @@ contract("check pause and unpause logic", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
@@ -104,7 +104,7 @@ contract("check pause and unpause logic", async accounts => {
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
         await expectRevert(
-            bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr }),
+            bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr }),
             'Pausable: paused'
         );
     })
@@ -112,7 +112,7 @@ contract("check pause and unpause logic", async accounts => {
     it("should revert claim reward if contract paused", async () => {
         await time.increase(time.duration.days(1));
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId, { from: firstAddr });
@@ -127,7 +127,7 @@ contract("check pause and unpause logic", async accounts => {
     })
 
     it("should revert unstake if contract paused", async () => {
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await expectRevert(
@@ -143,21 +143,21 @@ contract("check pause and unpause logic", async accounts => {
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 2, "user stake amount is wrong");
     })
 
     it("user should be able to claim reward after unpause", async () => {
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });
     })
 
     it("user should be able unstake tokens", async () => {
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.unstake(stakeId, { from: firstAddr });

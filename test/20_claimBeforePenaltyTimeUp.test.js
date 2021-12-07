@@ -96,9 +96,9 @@ contract("users make stake and claim before penalty duration time is up", async 
 
         for(let i = 0; i < users.length; i++) {          
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -110,9 +110,9 @@ contract("users make stake and claim before penalty duration time is up", async 
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: secondAddr });
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, 0, 0, { from: secondAddr });
 
         assert.equal(stakeDetails[0].length, 1, `user number of stake is wrong`);
         assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `user stake amount is wrong`);
@@ -125,7 +125,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let daysPassed = 1;
         await time.increase(time.duration.days(daysPassed));
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(firstAddr, stakeId,  { from: firstAddr });
@@ -135,7 +135,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("getStakeRewards secondToken:", (Number(stakeRew[1]) * 0.9) / tokenbits);
         expect((Number(stakeRew[0]) * 0.9)).to.be.above(0);
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
@@ -184,7 +184,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let daysPassed = 23; 
         await time.increase(time.duration.days(daysPassed - 1)); // -1 day from previous test
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, 0, 0, { from: secondAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, true, { from: secondAddr });
@@ -193,7 +193,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.94) / tokenbits);
         console.log("getStakeRewards secondToken:", (Number(stakeRew[1]) * 0.94) / tokenbits);
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(secondAddr, 0, 0, { from: secondAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
@@ -242,7 +242,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let daysPassed = 44;
         await time.increase(time.duration.days(daysPassed - 23)); // -23 days from previous tests
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, { from: thirdAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, 0, 0, { from: thirdAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(thirdAddr, stakeId, true, { from: thirdAddr });
@@ -251,7 +251,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.9) / tokenbits);
         console.log("getStakeRewards secondToken:", (Number(stakeRew[1]) * 0.9) / tokenbits);
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(thirdAddr, { from: thirdAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(thirdAddr, 0, 0, { from: thirdAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
@@ -300,7 +300,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let daysPassed = 45;
         await time.increase(time.duration.days(daysPassed - 44)); // -44 days from previous tests
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(fourthAddr, { from: fourthAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(fourthAddr, 0, 0, { from: fourthAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(fourthAddr, stakeId, true, { from: fourthAddr });
@@ -309,7 +309,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.9) / tokenbits);
         console.log("getStakeRewards secondToken:", (Number(stakeRew[1]) * 0.9) / tokenbits);
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(fourthAddr, { from: fourthAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(fourthAddr, 0, 0, { from: fourthAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });
@@ -353,7 +353,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         let daysPassed = 90;
         await time.increase(time.duration.days(daysPassed - 45)); // -45 days from previous tests
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(fifthAddr, 0, 0, { from: fifthAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(fifthAddr, stakeId, true, { from: fifthAddr });
@@ -362,7 +362,7 @@ contract("users make stake and claim before penalty duration time is up", async 
         console.log("getStakeRewards firstToken:", (Number(stakeRew[0]) * 0.9) / tokenbits);
         console.log("getStakeRewards secondToken:", (Number(stakeRew[1]) * 0.9) / tokenbits);
 
-        let userStakingDetails = await bRingFarming.viewStakingDetails(fifthAddr, { from: fifthAddr });
+        let userStakingDetails = await bRingFarming.viewStakingDetails(fifthAddr, 0, 0, { from: fifthAddr });
         let stakeStartTime = Number(userStakingDetails[3][0]);
 
         let poolData = await bRingFarming.pools(firstTokenAddress, { from: deployer });

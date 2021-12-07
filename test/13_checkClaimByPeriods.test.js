@@ -103,9 +103,9 @@ contract("check claim by period vs unstake once at the end", async accounts => {
 
         for(let i = 0; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -118,7 +118,7 @@ contract("check claim by period vs unstake once at the end", async accounts => {
         for(let i = 0; i < timePeriods.length; i++) {
             await time.increase(time.duration.days(timePeriods[i]));
 
-            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+            let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
             let stakeId = stakeDetails[0][0];
 
             await bRingFarming.claimReward(stakeId, { from: firstAddr });
@@ -135,7 +135,7 @@ contract("check claim by period vs unstake once at the end", async accounts => {
         await time.increase(time.duration.days(90));
 
         for(let i = 0; i < users.length; i++) {
-            let stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            let stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
             let stakeId = stakeDetails[0][0];
 
             await bRingFarming.unstake(stakeId, { from: users[i] });

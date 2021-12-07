@@ -101,7 +101,7 @@ contract("check reward with different referral levels and without referrer", asy
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
 
     })
 
@@ -114,9 +114,9 @@ contract("check reward with different referral levels and without referrer", asy
 
         for(let i = 1; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i-1], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](users[i-1], firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(stakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
@@ -129,7 +129,7 @@ contract("check reward with different referral levels and without referrer", asy
         const decimals = await BRNGToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, { from: secondAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(secondAddr, 0, 0, { from: secondAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(secondAddr, stakeId, { from: secondAddr });
@@ -158,7 +158,7 @@ contract("check reward with different referral levels and without referrer", asy
         const decimals = await BRNGToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, { from: thirdAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(thirdAddr, 0, 0, { from: thirdAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(thirdAddr, stakeId, { from: thirdAddr });
@@ -195,7 +195,7 @@ contract("check reward with different referral levels and without referrer", asy
         const decimals = await BRNGToken.decimals();
         const tokenbits = (new BN(10)).pow(decimals);
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(fourthAddr, { from: fourthAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(fourthAddr, 0, 0, { from: fourthAddr });
         let stakeId = stakeDetails[0][0];
 
         let stakeRew = await bRingFarming.getStakeRewards(fourthAddr, stakeId, { from: fourthAddr });

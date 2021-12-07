@@ -93,9 +93,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
@@ -104,9 +104,9 @@ contract("user should be able to do two stakes in a row one by one", async accou
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(secondAddr, firstTokenAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](secondAddr, firstTokenAddress, (new BN(stakeAmount - 100)).mul(tokenbits), { from: firstAddr });
      
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 2, "user stake amount is wrong");
     })   
 })

@@ -96,9 +96,9 @@ contract("check if user can not get reward twice for the same period", async acc
         const tokenbits = (new BN(10)).pow(decimals);
 
         await firstToken.approve(bRingFarmingAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
-        await bRingFarming.stake(firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
+        await bRingFarming.methods['stake(address,address,uint256)'](firstAddr, firstTokenAddress, (new BN(stakeAmount)).mul(tokenbits), { from: firstAddr });
     
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         assert.equal(stakeDetails[0].length, 1, "user stake amount is wrong");
     })
 
@@ -106,7 +106,7 @@ contract("check if user can not get reward twice for the same period", async acc
         let stakingDurationSeconds = Number(await bRingFarming.stakingDuration({ from: deployer }));
         await time.increase(time.duration.seconds(stakingDurationSeconds));
 
-        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, { from: firstAddr });
+        let stakeDetails = await bRingFarming.viewStakingDetails(firstAddr, 0, 0, { from: firstAddr });
         let stakeId = stakeDetails[0][0];
 
         await bRingFarming.claimReward(stakeId, { from: firstAddr });

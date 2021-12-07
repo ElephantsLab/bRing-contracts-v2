@@ -98,9 +98,9 @@ contract("check zero totalStakeLimit param", async accounts => {
 
         for(let i = 0; i < users.length; i++){
             await firstToken.approve(bRingFarmingAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: users[i] });
-            await bRingFarming.stake(users[i], firstTokenAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: users[i] });
+            await bRingFarming.methods['stake(address,address,uint256)'](users[i], firstTokenAddress, (new BN(maxStakeAmount)).mul(tokenbits), { from: users[i] });
 
-            stakeDetails = await bRingFarming.viewStakingDetails(users[i], { from: users[i] });
+            stakeDetails = await bRingFarming.viewStakingDetails(users[i], 0, 0, { from: users[i] });
 
             assert.equal(stakeDetails[0].length, 1, `${users[i]} user number of stake is wrong`);
             assert.equal(Number(stakeDetails[2]), Number((new BN(maxStakeAmount)).mul(tokenbits)), `${users[i]} user stake amount is wrong`);
