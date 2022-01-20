@@ -125,14 +125,34 @@ contract BRingFarming is BRingFarmingOwnable {
         IERC20(pool.farmingSequence[i]).safeTransfer(userAddress, userReward * 90 / 100);
         if (reward > userReward) {
           IERC20(pool.farmingSequence[i]).safeTransfer(pool.penaltyReceiver, (reward - userReward) * 90 / 100);
+
+          emit PenaltyPayout(
+            userAddress,
+            pool.penaltyReceiver,
+            _stake.idx,
+            _stake.stakedTokenAddress,
+            pool.farmingSequence[i],
+            (reward - userReward) * 90 / 100,
+            block.timestamp
+          );
         }
-        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 90 / 100, block.timestamp);
+        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], userReward * 90 / 100, block.timestamp);
       } else {
         IERC20(pool.farmingSequence[i]).safeTransfer(userAddress, userReward * 94 / 100);
         if (reward > userReward) {
           IERC20(pool.farmingSequence[i]).safeTransfer(pool.penaltyReceiver, (reward - userReward) * 94 / 100);
+
+          emit PenaltyPayout(
+            userAddress,
+            pool.penaltyReceiver,
+            _stake.idx,
+            _stake.stakedTokenAddress,
+            pool.farmingSequence[i],
+            (reward - userReward) * 94 / 100,
+            block.timestamp
+          );
         }
-        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], reward * 94 / 100, block.timestamp);
+        emit RewardPayout(userAddress, _stake.idx, _stake.stakedTokenAddress, pool.farmingSequence[i], userReward * 94 / 100, block.timestamp);
 
         address refTokenAddress = pool.farmingSequence[i];
         if (pool.referralRewardTokenAddress != address(0x0)) {

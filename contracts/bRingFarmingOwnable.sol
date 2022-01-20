@@ -82,6 +82,16 @@ abstract contract BRingFarmingOwnable is Ownable, Pausable {
     uint256 time
   );
 
+  event PenaltyPayout(
+    address userAddress,
+    address indexed penaltyReceiver,
+    uint256 stakeIdx,
+    address indexed stakedTokenAddress,
+    address indexed tokenAddress,
+    uint256 penaltyAmount,
+    uint256 time
+  );
+
   event ReferralPayout(
     address indexed receiverAddress,
     address callerAddress,
