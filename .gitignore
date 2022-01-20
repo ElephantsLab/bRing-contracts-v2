@@ -5,3 +5,4 @@ node_modules/
 .mnemonic
 .addresses
 *.tsv
+.secret*
